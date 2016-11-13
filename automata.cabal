@@ -18,6 +18,7 @@ library
   exposed-modules:     Parsing.General
                      , Parsing.Fta
                      , Types.Fta
+                     , Types.Fwa
   build-depends:       base >= 4.7 && < 5
                      , parsec
                      , containers

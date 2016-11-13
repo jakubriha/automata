@@ -37,4 +37,3 @@ makeFta states finalStates transitions rankedAlphabet =
     if and [finalStates `isSubsetOf` states]
        then Just (Fta states finalStates transitions rankedAlphabet)
        else Nothing
-
