@@ -5,7 +5,7 @@ import Test.HUnit
 import Test.Framework
 import Test.Framework.Providers.HUnit
 import Text.Parsec.Error
-import Text.Parsec.Pos (sourceName, sourceLine, sourceColumn)
+
 import Data.List
 import Control.Monad
 import Debug.Trace
@@ -46,24 +46,14 @@ testFta03 = assertFta "Incorrect transition count" (head testFiles) (\fta -> len
 
 assertFwa :: String -> FilePath -> (Fwa -> Bool) -> Assertion
 assertFwa errorMessage filePath condition = loadAndParseFwa filePath >>= \fwa ->
-    let k = traceShow fwa 5
-    in
-               case fwa of
-                   Left parseError -> assertFailure $ errorToString parseError
-                   Right state     -> unless (condition state) (assertFailure errorMessage)
+  case fwa of
+    Left parseError -> assertFailure parseError
+    Right fwa -> unless (condition fwa) (assertFailure errorMessage)
 
 assertFta :: String -> FilePath -> (Fta -> Bool) -> Assertion
 assertFta errorMessage filePath condition = loadAndParseFta filePath >>= \fta ->
-               case fta of
-                   Left parseError -> assertFailure $ errorToString parseError
-                   Right state     -> unless (condition state) (assertFailure errorMessage)
+  case fta of
+    Left parseError -> assertFailure parseError
+    Right fwa -> unless (condition fwa) (assertFailure errorMessage)
 
 testFiles = fmap ("test/TestFiles/" ++) ["0.txt", "1.txt", "2.txt", "3.txt", "4.txt"]
-
-errorToString :: ParseError -> String
-errorToString parseError = (intercalate ":" . fmap ($ parseError)) [getName, getLine, getColumn, getMessage]
-    where getMessage = concatMap messageString . errorMessages
-          getName = show . sourceName . errorPos
-          getLine    = show . sourceLine . errorPos
-          getColumn  = show . sourceColumn . errorPos
-

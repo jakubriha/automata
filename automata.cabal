@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Parsing.General
                      , Parsing.Fta
+                     , Parsing.Helpers
                      , Types.Fta
                      , Types.Fwa
   build-depends:       base >= 4.7 && < 5

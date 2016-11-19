@@ -1,14 +1,23 @@
-module Parsing.Fta where
+module Parsing.Fta
+  ( parseFta
+  ) where
 
+import Data.ByteString (ByteString)
 import Text.Parsec hiding (State)
 import Text.Parsec.ByteString
 import Data.Set (Set, fromList, empty)
 import Text.Parsec.Char
 import Text.Parsec.Number
-import Types.Fta
+import Text.Parsec (runParser)
 
-someFunc :: IO ()
-someFunc = putStrLn "someFunc"
+import Types.Fta
+import Parsing.Helpers (parseErrorToString)
+
+parseFta :: (Monad m) => ByteString -> m Fta
+parseFta fileContent =
+  case runParser file () "" fileContent of
+    Left error -> fail (parseErrorToString error)
+    Right fta -> return fta
 
 file :: Parser Fta
 file = do { string "Ops "
@@ -80,4 +89,3 @@ skipSpacesAndEol :: Parser ()
 skipSpacesAndEol = do { skipMany (char ' '); endOfLine; return () }
 
 brackets = between (char '(') (char ')')
-
