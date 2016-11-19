@@ -19,6 +19,6 @@ parseErrorToString parseError = (intercalate ":" . fmap ($ parseError)) [getName
 
 findSingle :: (a -> Bool) -> Set.Set a -> Maybe a
 findSingle predicate set =
-    case Set.toList $ Set.filter predicate set of
-      [x] -> Just x
-      _   -> Nothing
+  case Set.toList $ Set.filter predicate set of
+    [x] -> Just x
+    _   -> Nothing
