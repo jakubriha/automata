@@ -45,7 +45,6 @@ test-suite automata-test
                      , hspec
                      , QuickCheck
   default-language:    Haskell2010
-  other-modules:       Tests.BlaSpec
 
 source-repository head
   type:     git
