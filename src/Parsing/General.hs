@@ -34,17 +34,22 @@ ftaToFwa (Fta states finalStates transitions rankedAlphabet) =
     Nothing -> Nothing
     Just startState ->
       let
-        fwaTransitions = Set.map fwaTransition transitions
+        fwaTransitions = ((Set.map ftaToFwaTransition) . (Set.filter isStartTransition)) transitions
         alphabet = Set.map fst rankedAlphabet
       in
         Just (Fwa states startState finalStates fwaTransitions alphabet)
 
+isStartTransition :: Fta.Transition -> Bool
+isStartTransition = not . Set.null . inputStates
+
+ftaToFwaTransition :: Fta.Transition -> Fwa.Transition
+ftaToFwaTransition (Fta.Transition label inputStates finalState) =
+  Fwa.Transition label (elemAt 0 inputStates) finalState
+
 startStateFromTransitions :: Set Fta.Transition -> Maybe Fwa.State
 startStateFromTransitions transitions =
   case findSingle (\transition -> Set.null (inputStates transition)) transitions of
-    Just x -> Just $ elemAt 0 (inputStates x)
+    Just x -> Just (Fta.finalState x)
     _ -> Nothing
 
-fwaTransition :: Fta.Transition -> Fwa.Transition
-fwaTransition (Fta.Transition label inputStates finalState) =
-    Fwa.Transition label (elemAt 0 inputStates) finalState
+
