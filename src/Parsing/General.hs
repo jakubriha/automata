@@ -10,7 +10,7 @@ import Data.Set as Set
 import Types.Fta as Fta
 import Types.Fwa as Fwa
 import Parsing.Fta (parseFta)
-import Parsing.Helpers (findSingle)
+import Helpers (findSingle)
 
 loadAndParseFta :: (Monad m) => FilePath -> IO (m Fta)
 loadAndParseFta filePath =
