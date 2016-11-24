@@ -11,7 +11,7 @@ import Types.Fwa as Fwa
 spec :: Spec
 spec = do
   describe "Fwa" $ do
-    
+
     it "is parsed from file 1.txt" $ do
       canParseFwa (head testFiles)
 
@@ -19,7 +19,7 @@ spec = do
       assertFwa (head testFiles) (\fwa -> length (Fwa.states fwa) == 4)
 
     it "has correct transition count in file 1.txt" $ do
-      assertFwa (head testFiles) (\fwa -> length (Fwa.transitions fwa) == 14)    
+      assertFwa (head testFiles) (\fwa -> length (Fwa.transitions fwa) == 13)
 
 assertFwa :: FilePath -> (Fwa -> Bool) -> Expectation
 assertFwa filePath condition =
