@@ -29,3 +29,15 @@ findValidTransition fwa currentState currentLabel =
     where
       condition transition = state transition == currentState && label transition == currentLabel
 
+--union :: Fwa -> Fwa -> Fwa
+--union fwa1 fwa2 =
+--  let states = [ x ++ y | x <- states fwa1, y <- states fwa2 ]
+--      finalStates = filter undefined states
+--  in
+--    Fwa
+--      (Set.fromList states)
+--      (startState fwa1 ++ startState fwa2)
+
+
+
+

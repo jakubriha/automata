@@ -15,3 +15,4 @@ parseErrorToString parseError = (intercalate ":" . fmap ($ parseError)) [getName
     getLine = show . sourceLine . errorPos
     getColumn = show . sourceColumn . errorPos
     getMessage = concatMap messageString . errorMessages
+

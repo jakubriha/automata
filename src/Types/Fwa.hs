@@ -39,3 +39,4 @@ makeFwa states startState finalStates transitions alphabet =
   if (finalStates `isSubsetOf` states) && (startState `member` states)
      then Just(Fwa states startState finalStates transitions alphabet)
      else Nothing
+

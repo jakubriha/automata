@@ -103,3 +103,4 @@ skipSpacesAndEol = do
 
 brackets =
   between (char '(') (char ')')
+
