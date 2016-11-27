@@ -12,15 +12,15 @@ import Types.Fwa as Fwa
 import Parsing.Fta (parseFta)
 import Helpers (findSingle)
 
-loadAndParseFta :: (Monad m) => FilePath -> IO (m Fta)
+loadAndParseFta :: (Monad m) => FilePath -> IO (m (Fta String))
 loadAndParseFta filePath =
   fmap parseFta (B.readFile filePath)
 
-loadAndParseFwa :: (Monad m) => FilePath -> IO (m Fwa)
+loadAndParseFwa :: (Monad m) => FilePath -> IO (m (Fwa String))
 loadAndParseFwa filePath =
   fmap parseFwa (B.readFile filePath)
 
-parseFwa :: (Monad m) => B.ByteString -> m Fwa
+parseFwa :: (Monad m) => B.ByteString -> m (Fwa String)
 parseFwa fileContent =
   case parseFta fileContent of
     Left error -> fail error
@@ -28,7 +28,7 @@ parseFwa fileContent =
       Just fwa -> return fwa
       _ -> error "Cannot convert FTA to FWA"
 
-ftaToFwa :: Fta -> Maybe Fwa
+ftaToFwa :: Ord s => Fta s -> Maybe (Fwa s)
 ftaToFwa (Fta states finalStates transitions rankedAlphabet) =
   case startStateFromTransitions transitions of
     Nothing -> Nothing
@@ -39,14 +39,14 @@ ftaToFwa (Fta states finalStates transitions rankedAlphabet) =
       in
         Just (Fwa states startState finalStates fwaTransitions alphabet)
 
-isStartTransition :: Fta.Transition -> Bool
+isStartTransition :: Fta.Transition s -> Bool
 isStartTransition = not . Set.null . inputStates
 
-ftaToFwaTransition :: Fta.Transition -> Fwa.Transition
+ftaToFwaTransition :: Fta.Transition s -> Fwa.Transition s
 ftaToFwaTransition (Fta.Transition label inputStates finalState) =
   Fwa.Transition label (elemAt 0 inputStates) finalState
 
-startStateFromTransitions :: Set Fta.Transition -> Maybe Fwa.State
+startStateFromTransitions :: Set (Fta.Transition s) -> Maybe s
 startStateFromTransitions transitions =
   case findSingle (\transition -> Set.null (inputStates transition)) transitions of
     Just x -> Just (Fta.finalState x)

@@ -3,23 +3,22 @@ module Parsing.Fta
   ) where
 
 import Data.ByteString (ByteString)
-import Text.Parsec hiding (State)
+import Text.Parsec
 import Text.Parsec.ByteString
 import Data.Set (Set, fromList, empty)
 import Text.Parsec.Char
 import Text.Parsec.Number
-import Text.Parsec (runParser)
 
 import Types.Fta
 import Parsing.Helpers (parseErrorToString)
 
-parseFta :: (Monad m) => ByteString -> m Fta
+parseFta :: (Monad m) => ByteString -> m (Fta String)
 parseFta fileContent =
   case runParser file () "" fileContent of
     Left error -> fail (parseErrorToString error)
     Right fta -> return fta
 
-file :: Parser Fta
+file :: Parser (Fta String)
 file = do
   { string "Ops "
   ; labelList <- labelList
@@ -28,7 +27,7 @@ file = do
   ; returnFta states finalStates transitions labelList
   }
 
-returnFta :: Set State -> Set State -> Set Transition -> RankedAlphabet -> Parser Fta
+returnFta :: Ord s => Set s -> Set s -> Set (Transition s) -> RankedAlphabet -> Parser (Fta s)
 returnFta states finalStates transitions rankedAlphabet =
   case makeFta states finalStates transitions rankedAlphabet of
     Just fta -> return fta
@@ -46,7 +45,7 @@ labelDecl = do
   ; return (label, rank)
   }
 
-automaton :: Parser (Set State, Set State, Set Transition)
+automaton :: Parser (Set String, Set String, Set (Transition String))
 automaton = do
   { string "Automaton "
   ; many1 alphaNum
@@ -67,15 +66,15 @@ stateList :: Parser (Set String)
 stateList =
   sepEndByToSet state (char ' ')
 
-state :: Parser State
+state :: Parser String
 state =
   many1 alphaNum
 
-transitionList :: Parser (Set Transition)
+transitionList :: Parser (Set (Transition String))
 transitionList =
   sepEndByToSet transition endOfLine
 
-transition :: Parser Transition
+transition :: Parser (Transition String)
 transition = do
   { label <- Parsing.Fta.label
   ; inputStates <- transitionStateList
@@ -84,7 +83,7 @@ transition = do
   ; return (Types.Fta.Transition label inputStates finalState)
   }
 
-transitionStateList :: Parser (Set State)
+transitionStateList :: Parser (Set String)
 transitionStateList =
   option empty (brackets (sepEndByToSet state (char ',')))
 
