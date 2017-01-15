@@ -3,8 +3,6 @@ module Operations
   , run
   ) where
 
-import Data.Set (member)
-
 import Types.Fwa
 import Helpers (findSingle)
 
@@ -15,7 +13,7 @@ run :: Ord s => Fwa s -> [Label] -> Bool
 run fwa =
   run' (startState fwa)
     where
-      run' currentState [] = currentState `member` finalStates fwa
+      run' currentState [] = currentState `elem` finalStates fwa
       run' currentState (x:xs) =
         let validTransition = findValidTransition fwa currentState x
         in

@@ -33,7 +33,7 @@ ftaToFwa (Fta states finalStates transitions rankedAlphabet) =
   fmap mapper (findStartStateIn transitions)
     where
       fwaTransitions = (Set.map ftaToFwaTransition . Set.filter isNotStartTransition) transitions
-      mapper startState = Fwa startState finalStates (Set.toList fwaTransitions)
+      mapper startState = Fwa startState (Set.toList finalStates) (Set.toList fwaTransitions)
 
 isNotStartTransition :: Fta.Transition s -> Bool
 isNotStartTransition = not . Set.null . inputStates
