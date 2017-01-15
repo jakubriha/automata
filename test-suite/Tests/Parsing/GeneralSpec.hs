@@ -13,16 +13,16 @@ spec :: Spec
 spec = do
   describe "Fwa" $ do
 
-    it "is parsed from file 1.txt" $ do
+    it "is parsed from file 0.txt" $ do
       canParseFwa (head testFiles)
 
     it "has correct state count in file oneStateFwa.txt" $ do
       assertFwa "test-suite/AutomataExamples/oneStateFwa.txt" (\fwa -> length (Fwa.states fwa) == 1)
 
-    it "has correct state count in file 1.txt" $ do
+    it "has correct state count in file 0.txt" $ do
       assertFwa (head testFiles) (\fwa -> length (Fwa.states fwa) == 4)
 
-    it "has correct transition count in file 1.txt" $ do
+    it "has correct transition count in file 0.txt" $ do
       assertFwa (head testFiles) (\fwa -> length (Fwa.transitions fwa) == 13)
 
 canParseFwa :: FilePath -> Expectation
