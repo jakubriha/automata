@@ -15,7 +15,9 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Parsing.General
+  exposed-modules:     Operations
+                     , Helpers
+                     , Parsing.General
                      , Parsing.Fta
                      , Parsing.Helpers
                      , Types.Fta
@@ -45,7 +47,6 @@ test-suite automata-test
                      , hspec
                      , QuickCheck
   default-language:    Haskell2010
-  other-modules:       Tests.BlaSpec
 
 source-repository head
   type:     git

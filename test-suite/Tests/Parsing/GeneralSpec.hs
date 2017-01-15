@@ -5,6 +5,7 @@ module Tests.Parsing.GeneralSpec
 import Test.Hspec
 import Test.QuickCheck
 
+import Tests.Common (assertFwa)
 import Parsing.General
 import Types.Fwa as Fwa
 
@@ -15,18 +16,14 @@ spec = do
     it "is parsed from file 1.txt" $ do
       canParseFwa (head testFiles)
 
+    it "has correct state count in file oneStateFwa.txt" $ do
+      assertFwa "test-suite/AutomataExamples/oneStateFwa.txt" (\fwa -> length (Fwa.states fwa) == 1)
+
     it "has correct state count in file 1.txt" $ do
       assertFwa (head testFiles) (\fwa -> length (Fwa.states fwa) == 4)
 
     it "has correct transition count in file 1.txt" $ do
       assertFwa (head testFiles) (\fwa -> length (Fwa.transitions fwa) == 13)
-
-assertFwa :: FilePath -> (Fwa -> Bool) -> Expectation
-assertFwa filePath condition =
-  loadAndParseFwa filePath >>= \fwa ->
-    case fwa of
-      Left parseError -> expectationFailure parseError
-      Right fwa -> fwa `shouldSatisfy` condition
 
 canParseFwa :: FilePath -> Expectation
 canParseFwa filePath =
