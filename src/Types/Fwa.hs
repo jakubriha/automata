@@ -1,18 +1,13 @@
 module Types.Fwa
   ( Label
-  , Alphabet
   , Transition (..)
   , Fwa (..)
-  , makeFwa
   ) where
 
 import Data.Set (Set, isSubsetOf, member)
 
 type Label =
   String
-
-type Alphabet =
-  Set Label
 
 data Transition s =
   Transition
@@ -31,12 +26,11 @@ data Fwa s =
     , startState :: s
     , finalStates :: Set s
     , transitions :: Set (Transition s)
-    , alphabet :: Alphabet
     } deriving (Show)
 
-makeFwa :: Ord s => Set s -> s -> Set s -> Set (Transition s) -> Alphabet -> Maybe (Fwa s)
-makeFwa states startState finalStates transitions alphabet =
+makeFwa :: Ord s => Set s -> s -> Set s -> Set (Transition s) -> Maybe (Fwa s)
+makeFwa states startState finalStates transitions =
   if (finalStates `isSubsetOf` states) && (startState `member` states)
-     then Just(Fwa states startState finalStates transitions alphabet)
+     then Just(Fwa states startState finalStates transitions )
      else Nothing
 
