@@ -28,9 +28,3 @@ data Fwa s =
     , transitions :: Set (Transition s)
     } deriving (Show)
 
-makeFwa :: Ord s => Set s -> s -> Set s -> Set (Transition s) -> Maybe (Fwa s)
-makeFwa states startState finalStates transitions =
-  if (finalStates `isSubsetOf` states) && (startState `member` states)
-     then Just(Fwa states startState finalStates transitions )
-     else Nothing
-
