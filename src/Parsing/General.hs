@@ -10,7 +10,7 @@ import Data.Set as Set
 import Types.Fta as Fta
 import Types.Fwa as Fwa
 import Parsing.Fta (parseFta)
-import Helpers (findSingle)
+import Helpers (findSingle, findSingleInSet)
 
 loadAndParseFta :: (Monad m) => FilePath -> IO (m (Fta String))
 loadAndParseFta filePath =
@@ -32,11 +32,11 @@ ftaToFwa :: Ord s => Fta s -> Maybe (Fwa s)
 ftaToFwa (Fta states finalStates transitions rankedAlphabet) =
   fmap mapper (findStartStateIn transitions)
     where
-      fwaTransitions = (Set.map ftaToFwaTransition . Set.filter isStartTransition) transitions
-      mapper startState = Fwa states startState finalStates fwaTransitions
+      fwaTransitions = (Set.map ftaToFwaTransition . Set.filter isNotStartTransition) transitions
+      mapper startState = Fwa startState finalStates (Set.toList fwaTransitions)
 
-isStartTransition :: Fta.Transition s -> Bool
-isStartTransition = not . Set.null . inputStates
+isNotStartTransition :: Fta.Transition s -> Bool
+isNotStartTransition = not . Set.null . inputStates
 
 ftaToFwaTransition :: Fta.Transition s -> Fwa.Transition s
 ftaToFwaTransition (Fta.Transition label inputStates finalState) =
@@ -44,8 +44,7 @@ ftaToFwaTransition (Fta.Transition label inputStates finalState) =
 
 findStartStateIn :: Set (Fta.Transition s) -> Maybe s
 findStartStateIn transitions =
-  case findSingle (Set.null . inputStates) transitions of
+  case findSingleInSet (Set.null . inputStates) transitions of
     Just x -> Just (Fta.finalState x)
     _ -> Nothing
-
 

@@ -2,9 +2,11 @@ module Types.Fwa
   ( Label
   , Transition (..)
   , Fwa (..)
+  , states
   ) where
 
-import Data.Set (Set, isSubsetOf, member)
+import Data.List (nub)
+import Data.Set (Set, isSubsetOf, member, toList)
 
 type Label =
   String
@@ -22,9 +24,14 @@ instance Show s => Show (Transition s) where
 
 data Fwa s =
   Fwa
-    { states :: Set s
-    , startState :: s
+    { startState :: s
     , finalStates :: Set s
-    , transitions :: Set (Transition s)
+    , transitions :: [Transition s]
     } deriving (Show)
+
+states :: (Eq s) => Fwa s -> [s]
+states (Fwa startState finalStates transitions) =
+  nub ([startState] ++ toList finalStates ++ concatMap mapper transitions)
+    where
+      mapper (Transition _ state finalState) = [state, finalState]
 
