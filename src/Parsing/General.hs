@@ -10,17 +10,17 @@ import Data.Set as Set
 import Types.Fta as Fta
 import Types.Fwa as Fwa
 import Parsing.Fta (parseFta)
-import Parsing.Helpers (findSingle)
+import Helpers (findSingle, findSingleInSet)
 
-loadAndParseFta :: (Monad m) => FilePath -> IO (m Fta)
+loadAndParseFta :: (Monad m) => FilePath -> IO (m (Fta String))
 loadAndParseFta filePath =
   fmap parseFta (B.readFile filePath)
 
-loadAndParseFwa :: (Monad m) => FilePath -> IO (m Fwa)
+loadAndParseFwa :: (Monad m) => FilePath -> IO (m (Fwa String))
 loadAndParseFwa filePath =
   fmap parseFwa (B.readFile filePath)
 
-parseFwa :: (Monad m) => B.ByteString -> m Fwa
+parseFwa :: (Monad m) => B.ByteString -> m (Fwa String)
 parseFwa fileContent =
   case parseFta fileContent of
     Left error -> fail error
@@ -28,23 +28,23 @@ parseFwa fileContent =
       Just fwa -> return fwa
       _ -> error "Cannot convert FTA to FWA"
 
-ftaToFwa :: Fta -> Maybe Fwa
+ftaToFwa :: Ord s => Fta s -> Maybe (Fwa s)
 ftaToFwa (Fta states finalStates transitions rankedAlphabet) =
-  case startStateFromTransitions transitions of
-    Nothing -> Nothing
-    Just startState ->
-      let
-        fwaTransitions = Set.map fwaTransition transitions
-        alphabet = Set.map fst rankedAlphabet
-      in
-        Just (Fwa states startState finalStates fwaTransitions alphabet)
+  fmap mapper (findStartStateIn transitions)
+    where
+      fwaTransitions = (Set.map ftaToFwaTransition . Set.filter isNotStartTransition) transitions
+      mapper startState = Fwa startState (Set.toList finalStates) (Set.toList fwaTransitions)
 
-startStateFromTransitions :: Set Fta.Transition -> Maybe Fwa.State
-startStateFromTransitions transitions =
-  case findSingle (\transition -> Set.null (inputStates transition)) transitions of
-    Just x -> Just $ elemAt 0 (inputStates x)
+isNotStartTransition :: Fta.Transition s -> Bool
+isNotStartTransition = not . Set.null . inputStates
+
+ftaToFwaTransition :: Fta.Transition s -> Fwa.Transition s
+ftaToFwaTransition (Fta.Transition label inputStates finalState) =
+  Fwa.Transition label (elemAt 0 inputStates) finalState
+
+findStartStateIn :: Set (Fta.Transition s) -> Maybe s
+findStartStateIn transitions =
+  case findSingleInSet (Set.null . inputStates) transitions of
+    Just x -> Just (Fta.finalState x)
     _ -> Nothing
 
-fwaTransition :: Fta.Transition -> Fwa.Transition
-fwaTransition (Fta.Transition label inputStates finalState) =
-    Fwa.Transition label (elemAt 0 inputStates) finalState

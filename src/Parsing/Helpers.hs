@@ -1,6 +1,5 @@
 module Parsing.Helpers
-  ( findSingle
-  , parseErrorToString
+  ( parseErrorToString
   ) where
 
 import Text.Parsec (ParseError)
@@ -17,8 +16,3 @@ parseErrorToString parseError = (intercalate ":" . fmap ($ parseError)) [getName
     getColumn = show . sourceColumn . errorPos
     getMessage = concatMap messageString . errorMessages
 
-findSingle :: (a -> Bool) -> Set.Set a -> Maybe a
-findSingle predicate set =
-  case Set.toList $ Set.filter predicate set of
-    [x] -> Just x
-    _   -> Nothing

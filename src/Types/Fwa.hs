@@ -1,45 +1,36 @@
 module Types.Fwa
-  ( State
-  , Label
-  , Alphabet
+  ( Label
   , Transition (..)
   , Fwa (..)
-  , makeFwa
+  , states
   ) where
 
-import Data.Set (Set, isSubsetOf, member)
-
-type State =
-  String
+import Data.List (nub)
 
 type Label =
   String
 
-type Alphabet =
-  Set Label
-
-data Transition =
+data Transition s =
   Transition
     { label :: Label
-    , state :: State
-    , finalState :: State
+    , state :: s
+    , finalState :: s
     } deriving (Eq, Ord)
 
-instance Show Transition where
+instance Show s => Show (Transition s) where
   show (Transition label state finalState) =
     show label ++ "(" ++ show state ++ ")->" ++ show finalState
 
-data Fwa =
+data Fwa s =
   Fwa
-    { states :: Set State
-    , startState :: State
-    , finalStates :: Set State
-    , transitions :: Set Transition
-    , alphabet :: Alphabet
+    { startState :: s
+    , finalStates :: [s]
+    , transitions :: [Transition s]
     } deriving (Show)
 
-makeFwa :: Set State -> State -> Set State -> Set Transition -> Alphabet -> Maybe Fwa
-makeFwa states startState finalStates transitions alphabet =
-  if (finalStates `isSubsetOf` states) && (startState `member` states)
-     then Just(Fwa states startState finalStates transitions alphabet)
-     else Nothing
+states :: (Eq s) => Fwa s -> [s]
+states (Fwa startState finalStates transitions) =
+  nub ([startState] ++ finalStates ++ concatMap mapper transitions)
+    where
+      mapper (Transition _ state finalState) = [state, finalState]
+
