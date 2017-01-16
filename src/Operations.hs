@@ -4,38 +4,24 @@ module Operations
   ) where
 
 import Types.Fwa
-import Helpers (findSingle)
+import Data.List (intersect)
 
 charsToLabels :: String -> [Label]
 charsToLabels = fmap (: [])
 
 run :: Ord s => Fwa s -> [Label] -> Bool
 run fwa =
-  run' (startState fwa)
+  run' (startStates fwa)
     where
-      run' currentState [] = currentState `elem` finalStates fwa
-      run' currentState (x:xs) =
-        let validTransition = findValidTransition fwa currentState x
-        in
-          case validTransition of
-            Just transition -> run' (finalState transition) xs
-            _ -> False
+      run' currentStates [] =
+        currentStates `intersect` finalStates fwa /= []
+      run' currentStates (x:xs) =
+        run' (post fwa currentStates x) xs
 
-findValidTransition :: Eq s => Fwa s -> s -> Label -> Maybe (Transition s)
-findValidTransition fwa currentState currentLabel =
-  findSingle condition (transitions fwa)
+post :: (Eq s) => Fwa s -> [s] -> Label -> [s]
+post fwa currentStates label =
+  fmap finalState $ filter isApplicableTransition $ transitions fwa
     where
-      condition transition = state transition == currentState && label transition == currentLabel
-
---union :: Fwa -> Fwa -> Fwa
---union fwa1 fwa2 =
---  let states = [ x ++ y | x <- states fwa1, y <- states fwa2 ]
---      finalStates = filter undefined states
---  in
---    Fwa
---      (Set.fromList states)
---      (startState fwa1 ++ startState fwa2)
-
-
-
+      isApplicableTransition (Transition tLabel state _) =
+        tLabel == label && state `elem` currentStates
 
