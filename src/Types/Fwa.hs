@@ -23,14 +23,14 @@ instance Show s => Show (Transition s) where
 
 data Fwa s =
   Fwa
-    { startState :: s
+    { startStates :: [s]
     , finalStates :: [s]
     , transitions :: [Transition s]
     } deriving (Show)
 
 states :: (Eq s) => Fwa s -> [s]
-states (Fwa startState finalStates transitions) =
-  nub ([startState] ++ finalStates ++ concatMap mapper transitions)
+states (Fwa startStates finalStates transitions) =
+  nub (startStates ++ finalStates ++ concatMap mapper transitions)
     where
       mapper (Transition _ state finalState) = [state, finalState]
 
