@@ -3,7 +3,7 @@ module Parsing.Fta
   ) where
 
 import Data.ByteString (ByteString)
-import Text.Parsec
+import Text.Parsec hiding (State)
 import Text.Parsec.ByteString
 import Data.Set (Set, fromList, empty)
 import Text.Parsec.Char
@@ -12,13 +12,13 @@ import Text.Parsec.Number
 import Types.Fta
 import Parsing.Helpers (parseErrorToString)
 
-parseFta :: (Monad m) => ByteString -> m (Fta String)
+parseFta :: (Monad m) => ByteString -> m Fta
 parseFta fileContent =
   case runParser file () "" fileContent of
     Left error -> fail (parseErrorToString error)
     Right fta -> return fta
 
-file :: Parser (Fta String)
+file :: Parser Fta
 file = do
   { string "Ops "
   ; labelList <- labelList
@@ -27,7 +27,7 @@ file = do
   ; returnFta states finalStates transitions labelList
   }
 
-returnFta :: Ord s => Set s -> Set s -> Set (Transition s) -> RankedAlphabet -> Parser (Fta s)
+returnFta :: Set State -> Set State -> Set Transition -> RankedAlphabet -> Parser Fta
 returnFta states finalStates transitions rankedAlphabet =
   case makeFta states finalStates transitions rankedAlphabet of
     Just fta -> return fta
@@ -45,7 +45,7 @@ labelDecl = do
   ; return (label, rank)
   }
 
-automaton :: Parser (Set String, Set String, Set (Transition String))
+automaton :: Parser (Set String, Set String, Set Transition)
 automaton = do
   { string "Automaton "
   ; many1 alphaNum
@@ -70,11 +70,11 @@ state :: Parser String
 state =
   many1 alphaNum
 
-transitionList :: Parser (Set (Transition String))
+transitionList :: Parser (Set Transition)
 transitionList =
   sepEndByToSet transition endOfLine
 
-transition :: Parser (Transition String)
+transition :: Parser Transition
 transition = do
   { label <- Parsing.Fta.label
   ; inputStates <- transitionStateList

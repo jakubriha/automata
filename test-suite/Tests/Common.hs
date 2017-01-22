@@ -7,7 +7,7 @@ import Test.Hspec
 import Types.Fwa (Fwa)
 import Parsing.General (loadAndParseFwa)
 
-assertFwa :: FilePath -> (Fwa String -> Bool) -> Expectation
+assertFwa :: FilePath -> (Fwa -> Bool) -> Expectation
 assertFwa filePath condition =
   loadAndParseFwa filePath >>= \fwa ->
     case fwa of

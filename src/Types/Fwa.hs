@@ -1,5 +1,6 @@
 module Types.Fwa
   ( Label
+  , State
   , Transition (..)
   , Fwa (..)
   , states
@@ -8,27 +9,30 @@ module Types.Fwa
 import Data.List (nub)
 
 type Label =
+  State
+
+type State =
   String
 
-data Transition s =
+data Transition =
   Transition
     { label :: Label
-    , state :: s
-    , finalState :: s
+    , state :: State
+    , finalState :: State
     } deriving (Eq, Ord)
 
-instance Show s => Show (Transition s) where
+instance Show Transition where
   show (Transition label state finalState) =
     show label ++ "(" ++ show state ++ ")->" ++ show finalState
 
-data Fwa s =
+data Fwa =
   Fwa
-    { startStates :: [s]
-    , finalStates :: [s]
-    , transitions :: [Transition s]
+    { startStates :: [State]
+    , finalStates :: [State]
+    , transitions :: [Transition]
     } deriving (Show)
 
-states :: (Eq s) => Fwa s -> [s]
+states :: Fwa -> [State]
 states (Fwa startStates finalStates transitions) =
   nub (startStates ++ finalStates ++ concatMap mapper transitions)
     where

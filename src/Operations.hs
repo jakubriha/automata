@@ -9,7 +9,7 @@ import Data.List (intersect)
 charsToLabels :: String -> [Label]
 charsToLabels = fmap (: [])
 
-run :: Ord s => Fwa s -> [Label] -> Bool
+run :: Fwa -> [Label] -> Bool
 run fwa =
   run' (startStates fwa)
     where
@@ -18,7 +18,7 @@ run fwa =
       run' currentStates (x:xs) =
         run' (post fwa currentStates x) xs
 
-post :: (Eq s) => Fwa s -> [s] -> Label -> [s]
+post :: Fwa -> [State] -> Label -> [State]
 post fwa currentStates label =
   fmap finalState $ filter isApplicableTransition $ transitions fwa
     where
