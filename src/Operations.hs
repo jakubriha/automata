@@ -1,10 +1,11 @@
 module Operations
   ( charsToLabels
   , run
+  , Operations.union
   ) where
 
 import Types.Fwa
-import Data.List (intersect)
+import Data.List (intersect, union)
 
 charsToLabels :: String -> [Label]
 charsToLabels = fmap (: [])
@@ -24,4 +25,11 @@ post fwa currentStates label =
     where
       isApplicableTransition (Transition tLabel state _) =
         tLabel == label && state `elem` currentStates
+
+union :: Fwa -> Fwa -> Fwa
+union (Fwa startStates1 finalStates1 transitions1) (Fwa startStates2 finalStates2 transitions2) =
+  Fwa
+    (startStates1 `Data.List.union` startStates2)
+    (finalStates1 `Data.List.union`  finalStates2)
+    (transitions1 `Data.List.union` transitions2)
 

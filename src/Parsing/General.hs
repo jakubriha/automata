@@ -1,6 +1,6 @@
 module Parsing.General
-  ( loadAndParseFta
-  , loadAndParseFwa
+  ( loadFta
+  , loadFwa
   ) where
 
 import Data.ByteString as B
@@ -12,12 +12,12 @@ import Types.Fwa as Fwa
 import Parsing.Fta (parseFta)
 import Helpers (findSingle, findSingleInSet)
 
-loadAndParseFta :: (Monad m) => FilePath -> IO (m Fta)
-loadAndParseFta filePath =
+loadFta :: (Monad m) => FilePath -> IO (m Fta)
+loadFta filePath =
   fmap parseFta (B.readFile filePath)
 
-loadAndParseFwa :: (Monad m) => FilePath -> IO (m Fwa)
-loadAndParseFwa filePath =
+loadFwa :: (Monad m) => FilePath -> IO (m Fwa)
+loadFwa filePath =
   fmap parseFwa (B.readFile filePath)
 
 parseFwa :: (Monad m) => B.ByteString -> m Fwa
