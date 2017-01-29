@@ -1,5 +1,6 @@
 module Types.Fta
   ( Label
+  , State
   , Rank
   , RankedAlphabet
   , Transition (..)
@@ -10,6 +11,9 @@ module Types.Fta
 import Data.Set (Set, isSubsetOf)
 
 type Label =
+  State
+
+type State =
   String
 
 type Rank =
@@ -18,26 +22,26 @@ type Rank =
 type RankedAlphabet =
   Set (Label, Rank)
 
-data Transition s =
+data Transition =
   Transition
     { label :: Label
-    , inputStates :: Set s
-    , finalState :: s
+    , inputStates :: Set State
+    , finalState :: State
     } deriving (Eq, Ord)
 
-instance Show s => Show (Transition s) where
+instance Show Transition where
   show (Transition label inputStates finalState) =
     show label ++ "(" ++ show inputStates ++ ")->" ++ show finalState
 
-data Fta s =
+data Fta =
   Fta
-    { states :: Set s
-    , finalStates :: Set s
-    , transitions :: Set (Transition s)
+    { states :: Set State
+    , finalStates :: Set State
+    , transitions :: Set Transition
     , rankedAlphabet :: RankedAlphabet
     } deriving (Show)
 
-makeFta :: Ord s => Set s -> Set s -> Set (Transition s) -> RankedAlphabet -> Maybe (Fta s)
+makeFta :: Set State -> Set State -> Set Transition -> RankedAlphabet -> Maybe Fta
 makeFta states finalStates transitions rankedAlphabet =
   if and [finalStates `isSubsetOf` states]
      then Just (Fta states finalStates transitions rankedAlphabet)

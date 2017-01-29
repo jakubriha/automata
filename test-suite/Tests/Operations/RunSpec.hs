@@ -1,4 +1,4 @@
-module Tests.OperationsSpec
+module Tests.Operations.RunSpec
   ( spec
   ) where
 
@@ -6,13 +6,12 @@ import Test.Hspec
 import Test.QuickCheck
 
 import Tests.Common (assertFwa)
-import Parsing.General (loadAndParseFwa)
 import Operations (charsToLabels, run)
 
 spec :: Spec
 spec =
   describe "Fwa" $ do
-    describe "accepting ''" $ do
+    describe "defined in oneStateFwa.txt" $ do
 
       it "accepts empty language" $
         assertFwa (testDirectory ++ "oneStateFwa.txt") (\fwa -> run fwa [])
@@ -20,7 +19,7 @@ spec =
       it "doesn't accept non-empty language" $
         assertFwa (testDirectory ++ "oneStateFwa.txt") (\fwa -> not $ run fwa (charsToLabels "Hello World!"))
 
-    describe "accepting 0.txt" $ do
+    describe "defined in 0.txt" $ do
 
       it "accepts 'a17 a18 a18 a2'" $
         assertFwa (testDirectory ++ "0.txt") (\fwa -> run fwa ["a17", "a18", "a18", "a2"])
