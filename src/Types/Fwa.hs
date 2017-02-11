@@ -37,7 +37,7 @@ states (Fwa startStates finalStates transitions) =
 
 labels :: Fwa -> [Label]
 labels (Fwa _ _ transitions) =
-  nub (fmap state transitions)
+  nub (fmap label transitions)
 
 instance Show Transition where
   show (Transition label state finalState) =
