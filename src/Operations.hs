@@ -37,7 +37,7 @@ union (Fwa startStates1 finalStates1 transitions1) (Fwa startStates2 finalStates
 intersect :: Fwa -> Fwa -> Fwa
 intersect fwa1@(Fwa startStates1 finalStates1 transitions1) (Fwa startStates2 finalStates2 transitions2) =
   let
-    mergeStates first second = "(" ++ first ++ "," ++ second ++ ")"
+    mergeStates first second = "[" ++ first ++ "," ++ second ++ "]"
     transitionsPerLabel label =
       [ Transition label (mergeStates state1 state2) (mergeStates final1 final2)
       | (Transition label1 state1 final1) <- transitions1
