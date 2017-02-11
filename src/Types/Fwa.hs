@@ -61,6 +61,10 @@ printAutomaton fwa =
   ++ "States " ++ unwords (states fwa) ++ "\n"
   ++ "Final States " ++ unwords (finalStates fwa) ++ "\n"
   ++ "Transitions\n"
-  ++ "x -> " ++ head (startStates fwa) ++ "\n"
+  ++ printStartStates (startStates fwa) ++ "\n"
   ++ (intercalate "\n" . fmap show) (transitions fwa)
+
+printStartStates :: [State] -> String
+printStartStates =
+  intercalate "\n" . fmap (\state -> "x -> " ++ state)
 
