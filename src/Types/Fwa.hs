@@ -7,10 +7,10 @@ module Types.Fwa
   , labels
   ) where
 
-import Data.List (nub)
+import Data.List (nub, intersperse, intercalate)
 
 type Label =
-  State
+  String
 
 type State =
   String
@@ -22,16 +22,12 @@ data Transition =
     , finalState :: State
     } deriving (Eq, Ord)
 
-instance Show Transition where
-  show (Transition label state finalState) =
-    show label ++ "(" ++ show state ++ ")->" ++ show finalState
-
 data Fwa =
   Fwa
     { startStates :: [State]
     , finalStates :: [State]
     , transitions :: [Transition]
-    } deriving (Show)
+    }
 
 states :: Fwa -> [State]
 states (Fwa startStates finalStates transitions) =
@@ -42,4 +38,29 @@ states (Fwa startStates finalStates transitions) =
 labels :: Fwa -> [Label]
 labels (Fwa _ _ transitions) =
   nub (fmap state transitions)
+
+instance Show Transition where
+  show (Transition label state finalState) =
+    label ++ "(" ++ state ++ ") -> " ++ finalState
+
+instance Show Fwa where
+  show fwa =
+    printLabelList (labels fwa) ++ "\n\n" ++ printAutomaton fwa
+
+printLabelList :: [Label] -> String
+printLabelList labels =
+  "Ops " ++ (unwords . fmap printLabelDecl) (labels ++ ["x"])
+
+printLabelDecl :: Label -> String
+printLabelDecl label =
+  label ++ ":1"
+
+printAutomaton :: Fwa -> String
+printAutomaton fwa =
+  "Automaton A\n"
+  ++ "States " ++ unwords (states fwa) ++ "\n"
+  ++ "Final States " ++ unwords (finalStates fwa) ++ "\n"
+  ++ "Transitions\n"
+  ++ "x -> " ++ head (startStates fwa) ++ "\n"
+  ++ (intercalate "\n" . fmap show) (transitions fwa)
 
