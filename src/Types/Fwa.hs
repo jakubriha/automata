@@ -4,6 +4,7 @@ module Types.Fwa
   , Transition (..)
   , Fwa (..)
   , states
+  , labels
   ) where
 
 import Data.List (nub)
@@ -37,4 +38,8 @@ states (Fwa startStates finalStates transitions) =
   nub (startStates ++ finalStates ++ concatMap mapper transitions)
     where
       mapper (Transition _ state finalState) = [state, finalState]
+
+labels :: Fwa -> [Label]
+labels (Fwa _ _ transitions) =
+  nub (fmap state transitions)
 
