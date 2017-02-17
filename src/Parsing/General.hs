@@ -16,11 +16,11 @@ loadFta :: (Monad m) => FilePath -> IO (m Fta)
 loadFta filePath =
   fmap parseFta (B.readFile filePath)
 
-loadFwa :: (Monad m) => FilePath -> IO (m Fwa)
+loadFwa :: (Monad m) => FilePath -> IO (m (Fwa Fwa.Label Fwa.State))
 loadFwa filePath =
   fmap parseFwa (B.readFile filePath)
 
-parseFwa :: (Monad m) => B.ByteString -> m Fwa
+parseFwa :: (Monad m) => B.ByteString -> m (Fwa Fwa.Label Fwa.State)
 parseFwa fileContent =
   case parseFta fileContent of
     Left error -> fail error
@@ -28,7 +28,7 @@ parseFwa fileContent =
       Just fwa -> return fwa
       _ -> error "Cannot convert FTA to FWA"
 
-ftaToFwa :: Fta -> Maybe Fwa
+ftaToFwa :: Fta -> Maybe (Fwa Fwa.Label Fwa.State)
 ftaToFwa (Fta states finalStates transitions rankedAlphabet) =
   fmap mapper (findStartStateIn transitions)
     where
@@ -38,7 +38,7 @@ ftaToFwa (Fta states finalStates transitions rankedAlphabet) =
 isNotStartTransition :: Fta.Transition -> Bool
 isNotStartTransition = not . Set.null . inputStates
 
-ftaToFwaTransition :: Fta.Transition -> Fwa.Transition
+ftaToFwaTransition :: Fta.Transition -> Fwa.Transition Fwa.Label Fwa.State
 ftaToFwaTransition (Fta.Transition label inputStates finalState) =
   Fwa.Transition label (elemAt 0 inputStates) finalState
 
