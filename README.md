@@ -14,7 +14,7 @@ The library will also provide the following operations in the future:
 * Universality testing (located in module `Operations.universality`).
 
 ## Experimenting with the library
-This library uses [Stack](https://docs.haskellstack.org) as a development tool. It is necessary to install Stack in order to use the library. Stack docs contain the [installation instructions](https://docs.haskellstack.org/en/stable/README/#how-to-install).
+This library uses [Stack](https://docs.haskellstack.org) as a development tool. It is necessary to install Stack in order to build the library. Stack docs contain the [installation instructions](https://docs.haskellstack.org/en/stable/README/#how-to-install).
 
 After the installation of Stack, you can start the REPL by executing `stack ghci` in the root of the library. This will download all required dependencies and start GHCi with all library modules loaded.
 
