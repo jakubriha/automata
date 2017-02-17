@@ -5,15 +5,15 @@ module Tests.Operations.UnionSpec
 import Test.Hspec
 import Test.QuickCheck
 
-import Tests.Common (assert2Fwa)
+import Tests.Common (assert2Fa)
 import Operations (charsToLabels, run, union)
 
 spec :: Spec
 spec =
   describe "Union of" $
-    describe "Fwa defined in oneStateFwa.txt and oneStateFwa.txt" $
+    describe "Fa defined in oneStateFa.txt and oneStateFa.txt" $
       it "accepts empty language" $
-        assert2Fwa (testDirectory ++ "oneStateFwa.txt") (testDirectory ++ "oneStateFwa.txt") (\fwa1 fwa2 -> run (fwa1 `union` fwa2) (charsToLabels ""))
+        assert2Fa (testDirectory ++ "oneStateFa.txt") (testDirectory ++ "oneStateFa.txt") (\fa1 fa2 -> run (fa1 `union` fa2) (charsToLabels ""))
 
 testDirectory =
   "test-suite/AutomataExamples/"

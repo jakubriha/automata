@@ -5,29 +5,29 @@ module Tests.Parsing.GeneralSpec
 import Test.Hspec
 import Test.QuickCheck
 
-import Tests.Common (assertFwa)
+import Tests.Common (assertFa)
 import Parsing.General
-import Types.Fwa as Fwa
+import Types.Fa as Fa
 
 spec :: Spec
 spec = do
-  describe "Fwa" $ do
+  describe "Fa" $ do
 
     it "is parsed from file 0.txt" $ do
-      canParseFwa (head testFiles)
+      canParseFa (head testFiles)
 
-    it "has correct state count in file oneStateFwa.txt" $ do
-      assertFwa "test-suite/AutomataExamples/oneStateFwa.txt" ((== 1) . length . Fwa.states)
+    it "has correct state count in file oneStateFa.txt" $ do
+      assertFa "test-suite/AutomataExamples/oneStateFa.txt" ((== 1) . length . Fa.states)
 
     it "has correct state count in file 0.txt" $ do
-      assertFwa (head testFiles) ((== 4) . length . Fwa.states)
+      assertFa (head testFiles) ((== 4) . length . Fa.states)
 
     it "has correct transition count in file 0.txt" $ do
-      assertFwa (head testFiles) ((== 13) . length . Fwa.transitions)
+      assertFa (head testFiles) ((== 13) . length . Fa.transitions)
 
-canParseFwa :: FilePath -> Expectation
-canParseFwa filePath =
-  assertFwa filePath (const True)
+canParseFa :: FilePath -> Expectation
+canParseFa filePath =
+  assertFa filePath (const True)
 
 testFiles =
   fmap ("test-suite/AutomataExamples/" ++) ["0.txt", "1.txt", "2.txt", "3.txt", "4.txt"]

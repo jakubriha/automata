@@ -22,7 +22,7 @@ library
                      , Parsing.Fta
                      , Parsing.Helpers
                      , Types.Fta
-                     , Types.Fwa
+                     , Types.Fa
   build-depends:       base >= 4.7 && < 5
                      , parsec
                      , containers

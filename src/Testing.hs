@@ -1,17 +1,17 @@
 module Testing
-  ( test2Fwa
+  ( test2Fa
   ) where
 
-import Types.Fwa
-import Parsing.General (loadFwa)
+import Types.Fa
+import Parsing.General (loadFa)
 
-test2Fwa :: (Eq i, Show i, Eq s, Show s) => FilePath -> FilePath -> (Fwa Label State -> Fwa Label State -> Fwa i s) -> IO ()
-test2Fwa filePath1 filePath2 operation =
-  do firstFwa <- loadFwa filePath1
-     secondFwa <- loadFwa filePath2
-     case firstFwa of
+test2Fa :: (Eq i, Show i, Eq s, Show s) => FilePath -> FilePath -> (Fa Label State -> Fa Label State -> Fa i s) -> IO ()
+test2Fa filePath1 filePath2 operation =
+  do firstFa <- loadFa filePath1
+     secondFa <- loadFa filePath2
+     case firstFa of
        Left parseError -> putStrLn parseError
-       Right fwa1 -> case secondFwa of
+       Right fa1 -> case secondFa of
                   Left parseError -> putStrLn parseError
-                  Right fwa2 -> print (operation fwa1 fwa2)
+                  Right fa2 -> print (operation fa1 fa2)
 

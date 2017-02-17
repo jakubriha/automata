@@ -1,27 +1,27 @@
 module Tests.Common
-  ( assertFwa
-  , assert2Fwa
+  ( assertFa
+  , assert2Fa
   ) where
 
 import Test.Hspec
 
-import Types.Fwa (Fwa, State, Label)
-import Parsing.General (loadFwa)
+import Types.Fa (Fa, State, Label)
+import Parsing.General (loadFa)
 
-assertFwa :: FilePath -> (Fwa Label State -> Bool) -> Expectation
-assertFwa filePath condition =
-  loadFwa filePath >>= \fwa ->
-    case fwa of
+assertFa :: FilePath -> (Fa Label State -> Bool) -> Expectation
+assertFa filePath condition =
+  loadFa filePath >>= \fa ->
+    case fa of
       Left parseError -> expectationFailure parseError
-      Right fwa -> fwa `shouldSatisfy` condition
+      Right fa -> fa `shouldSatisfy` condition
 
-assert2Fwa :: FilePath -> FilePath -> (Fwa Label State -> Fwa Label State -> Bool) -> Expectation
-assert2Fwa filePath1 filePath2 condition =
-  do firstFwa <- loadFwa filePath1
-     secondFwa <- loadFwa filePath2
-     case firstFwa of
+assert2Fa :: FilePath -> FilePath -> (Fa Label State -> Fa Label State -> Bool) -> Expectation
+assert2Fa filePath1 filePath2 condition =
+  do firstFa <- loadFa filePath1
+     secondFa <- loadFa filePath2
+     case firstFa of
        Left parseError -> expectationFailure parseError
-       Right fwa1 -> case secondFwa of
+       Right fa1 -> case secondFa of
                   Left parseError -> expectationFailure parseError
-                  Right fwa2 -> fwa2 `shouldSatisfy` condition fwa1
+                  Right fa2 -> fa2 `shouldSatisfy` condition fa1
 
