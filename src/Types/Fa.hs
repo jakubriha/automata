@@ -15,47 +15,47 @@ type Symbol =
 type State =
   String
 
-data Transition i s =
+data Transition sym sta =
   Transition
-    { symbol :: i
-    , state :: s
-    , finalState :: s
+    { symbol :: sym
+    , state :: sta
+    , finalState :: sta
     } deriving (Eq, Ord)
 
-data Fa i s =
+data Fa sym sta =
   Fa
-    { initialStates :: [s]
-    , finalStates :: [s]
-    , transitions :: [Transition i s]
+    { initialStates :: [sta]
+    , finalStates :: [sta]
+    , transitions :: [Transition sym sta]
     }
 
-states :: (Eq s) => Fa i s -> [s]
+states :: (Eq sta) => Fa sym sta -> [sta]
 states (Fa initialStates finalStates transitions) =
   nub (initialStates ++ finalStates ++ concatMap mapper transitions)
     where
       mapper (Transition _ state finalState) = [state, finalState]
 
-symbols :: Eq i => Fa i s -> [i]
+symbols :: Eq sym => Fa sym sta -> [sym]
 symbols (Fa _ _ transitions) =
   nub (fmap symbol transitions)
 
-instance (Show i, Show s) => Show (Transition i s) where
+instance (Show sym, Show sta) => Show (Transition sym sta) where
   show (Transition symbol state finalState) =
     show symbol ++ "(" ++ show state ++ ") -> " ++ show finalState
 
-instance (Eq i, Show i, Eq s, Show s) => Show (Fa i s) where
+instance (Eq sym, Show sym, Eq sta, Show sta) => Show (Fa sym sta) where
   show fa =
     printSymbolList (symbols fa) ++ "\n\n" ++ printAutomaton fa
 
-printSymbolList :: Show i => [i] -> String
+printSymbolList :: Show sym => [sym] -> String
 printSymbolList symbols =
   "Ops " ++ printSymbolDecl "x" ++ " " ++ (unwords . fmap printSymbolDecl) symbols
 
-printSymbolDecl :: Show i => i -> String
+printSymbolDecl :: Show sym => sym -> String
 printSymbolDecl symbol =
   show symbol ++ ":1"
 
-printAutomaton :: (Show i, Eq s, Show s) => Fa i s -> String
+printAutomaton :: (Show sym, Eq sta, Show sta) => Fa sym sta -> String
 printAutomaton fa =
   "Automaton A\n"
   ++ "States " ++ unwords (show <$> states fa) ++ "\n"
@@ -64,7 +64,7 @@ printAutomaton fa =
   ++ printInitialStates (initialStates fa) ++ "\n"
   ++ (intercalate "\n" . fmap show) (transitions fa)
 
-printInitialStates :: Show s => [s] -> String
+printInitialStates :: Show sta => [sta] -> String
 printInitialStates =
   intercalate "\n" . fmap (("x -> " ++) . show)
 

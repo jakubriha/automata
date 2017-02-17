@@ -11,7 +11,7 @@ import Data.List as List
 charsToSymbols :: String -> [Symbol]
 charsToSymbols = fmap (: [])
 
-run :: (Eq i, Eq s) => Fa i s -> [i] -> Bool
+run :: (Eq sym, Eq sta) => Fa sym sta -> [sym] -> Bool
 run fa =
   run' (initialStates fa)
     where
@@ -20,21 +20,21 @@ run fa =
       run' currentStates (x:xs) =
         run' (post fa currentStates x) xs
 
-post :: (Eq i, Eq s) => Fa i s -> [s] -> i -> [s]
+post :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> sym -> [sta]
 post fa currentStates symbol =
   fmap finalState $ filter isApplicableTransition $ transitions fa
     where
       isApplicableTransition (Transition tSymbol state _) =
         tSymbol == symbol && state `elem` currentStates
 
-union :: (Eq i, Eq s) => Fa i s -> Fa i s -> Fa i s
+union :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym sta -> Fa sym sta
 union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
   Fa
     (initialStates1 `List.union` initialStates2)
     (finalStates1 `List.union`  finalStates2)
     (transitions1 `List.union` transitions2)
 
-intersect :: Eq i => Fa i s -> Fa i s -> Fa i (s, s)
+intersect :: Eq sym => Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
 intersect fa1@(Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
   let
     transitionsPerSymbol symbol =
