@@ -6,7 +6,7 @@ import Test.Hspec
 import Test.QuickCheck
 
 import Tests.Common (assertFa)
-import Operations (charsToLabels, run)
+import Operations (charsToSymbols, run)
 
 spec :: Spec
 spec =
@@ -17,7 +17,7 @@ spec =
         assertFa (testDirectory ++ "oneStateFa.txt") (\fa -> run fa [])
 
       it "doesn't accept non-empty language" $
-        assertFa (testDirectory ++ "oneStateFa.txt") (\fa -> not $ run fa (charsToLabels "Hello World!"))
+        assertFa (testDirectory ++ "oneStateFa.txt") (\fa -> not $ run fa (charsToSymbols "Hello World!"))
 
     describe "defined in 0.txt" $ do
 

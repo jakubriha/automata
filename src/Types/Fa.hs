@@ -1,15 +1,15 @@
 module Types.Fa
-  ( Label
+  ( Symbol
   , State
   , Transition (..)
   , Fa (..)
   , states
-  , labels
+  , symbols
   ) where
 
 import Data.List (nub, intersperse, intercalate)
 
-type Label =
+type Symbol =
   String
 
 type State =
@@ -17,7 +17,7 @@ type State =
 
 data Transition i s =
   Transition
-    { label :: i
+    { symbol :: i
     , state :: s
     , finalState :: s
     } deriving (Eq, Ord)
@@ -35,25 +35,25 @@ states (Fa initialStates finalStates transitions) =
     where
       mapper (Transition _ state finalState) = [state, finalState]
 
-labels :: Eq i => Fa i s -> [i]
-labels (Fa _ _ transitions) =
-  nub (fmap label transitions)
+symbols :: Eq i => Fa i s -> [i]
+symbols (Fa _ _ transitions) =
+  nub (fmap symbol transitions)
 
 instance (Show i, Show s) => Show (Transition i s) where
-  show (Transition label state finalState) =
-    show label ++ "(" ++ show state ++ ") -> " ++ show finalState
+  show (Transition symbol state finalState) =
+    show symbol ++ "(" ++ show state ++ ") -> " ++ show finalState
 
 instance (Eq i, Show i, Eq s, Show s) => Show (Fa i s) where
   show fa =
-    printLabelList (labels fa) ++ "\n\n" ++ printAutomaton fa
+    printSymbolList (symbols fa) ++ "\n\n" ++ printAutomaton fa
 
-printLabelList :: Show i => [i] -> String
-printLabelList labels =
-  "Ops " ++ printLabelDecl "x" ++ " " ++ (unwords . fmap printLabelDecl) labels
+printSymbolList :: Show i => [i] -> String
+printSymbolList symbols =
+  "Ops " ++ printSymbolDecl "x" ++ " " ++ (unwords . fmap printSymbolDecl) symbols
 
-printLabelDecl :: Show i => i -> String
-printLabelDecl label =
-  show label ++ ":1"
+printSymbolDecl :: Show i => i -> String
+printSymbolDecl symbol =
+  show symbol ++ ":1"
 
 printAutomaton :: (Show i, Eq s, Show s) => Fa i s -> String
 printAutomaton fa =

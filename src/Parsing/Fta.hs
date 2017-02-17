@@ -21,10 +21,10 @@ parseFta fileContent =
 file :: Parser Fta
 file = do
   { string "Ops "
-  ; labelList <- labelList
+  ; symbolList <- symbolList
   ; skipMany1 endOfLine
   ; (states, finalStates, transitions) <- automaton
-  ; returnFta states finalStates transitions labelList
+  ; returnFta states finalStates transitions symbolList
   }
 
 returnFta :: Set State -> Set State -> Set Transition -> RankedAlphabet -> Parser Fta
@@ -33,16 +33,16 @@ returnFta states finalStates transitions rankedAlphabet =
     Just fta -> return fta
     _ -> fail "Invalid FTA"
 
-labelList :: Parser RankedAlphabet
-labelList =
-  sepEndByToSet labelDecl (char ' ')
+symbolList :: Parser RankedAlphabet
+symbolList =
+  sepEndByToSet symbolDecl (char ' ')
 
-labelDecl :: Parser (Label, Rank)
-labelDecl = do
-  { label <- Parsing.Fta.label
+symbolDecl :: Parser (Symbol, Rank)
+symbolDecl = do
+  { symbol <- Parsing.Fta.symbol
   ; char ':'
   ; rank <- decimal
-  ; return (label, rank)
+  ; return (symbol, rank)
   }
 
 automaton :: Parser (Set String, Set String, Set Transition)
@@ -76,19 +76,19 @@ transitionList =
 
 transition :: Parser Transition
 transition = do
-  { label <- Parsing.Fta.label
+  { symbol <- Parsing.Fta.symbol
   ; inputStates <- transitionStateList
   ; string " -> "
   ; finalState <- state
-  ; return (Types.Fta.Transition label inputStates finalState)
+  ; return (Types.Fta.Transition symbol inputStates finalState)
   }
 
 transitionStateList :: Parser (Set String)
 transitionStateList =
   option empty (brackets (sepEndByToSet state (char ',')))
 
-label :: Parser Label
-label =
+symbol :: Parser Symbol
+symbol =
   many1 alphaNum
 
 sepEndByToSet :: (Ord a, Stream s m t) => ParsecT s u m a -> ParsecT s u m sep -> ParsecT s u m (Set a)

@@ -16,11 +16,11 @@ loadFta :: (Monad m) => FilePath -> IO (m Fta)
 loadFta filePath =
   fmap parseFta (B.readFile filePath)
 
-loadFa :: (Monad m) => FilePath -> IO (m (Fa Fa.Label Fa.State))
+loadFa :: (Monad m) => FilePath -> IO (m (Fa Fa.Symbol Fa.State))
 loadFa filePath =
   fmap parseFa (B.readFile filePath)
 
-parseFa :: (Monad m) => B.ByteString -> m (Fa Fa.Label Fa.State)
+parseFa :: (Monad m) => B.ByteString -> m (Fa Fa.Symbol Fa.State)
 parseFa fileContent =
   case parseFta fileContent of
     Left error -> fail error
@@ -28,7 +28,7 @@ parseFa fileContent =
       Just fa -> return fa
       _ -> error "Cannot convert FTA to fa"
 
-ftaToFa :: Fta -> Maybe (Fa Fa.Label Fa.State)
+ftaToFa :: Fta -> Maybe (Fa Fa.Symbol Fa.State)
 ftaToFa (Fta states finalStates transitions rankedAlphabet) =
   fmap mapper (findInitialStateIn transitions)
     where
@@ -38,9 +38,9 @@ ftaToFa (Fta states finalStates transitions rankedAlphabet) =
 isNotInitialTransition :: Fta.Transition -> Bool
 isNotInitialTransition = not . Set.null . inputStates
 
-ftaToFaTransition :: Fta.Transition -> Fa.Transition Fa.Label Fa.State
-ftaToFaTransition (Fta.Transition label inputStates finalState) =
-  Fa.Transition label (elemAt 0 inputStates) finalState
+ftaToFaTransition :: Fta.Transition -> Fa.Transition Fa.Symbol Fa.State
+ftaToFaTransition (Fta.Transition symbol inputStates finalState) =
+  Fa.Transition symbol (elemAt 0 inputStates) finalState
 
 findInitialStateIn :: Set Fta.Transition -> Maybe Fta.State
 findInitialStateIn transitions =

@@ -1,5 +1,5 @@
 module Operations
-  ( charsToLabels
+  ( charsToSymbols
   , run
   , Operations.union
   , Operations.intersect
@@ -8,8 +8,8 @@ module Operations
 import Types.Fa
 import Data.List as List
 
-charsToLabels :: String -> [Label]
-charsToLabels = fmap (: [])
+charsToSymbols :: String -> [Symbol]
+charsToSymbols = fmap (: [])
 
 run :: (Eq i, Eq s) => Fa i s -> [i] -> Bool
 run fa =
@@ -21,11 +21,11 @@ run fa =
         run' (post fa currentStates x) xs
 
 post :: (Eq i, Eq s) => Fa i s -> [s] -> i -> [s]
-post fa currentStates label =
+post fa currentStates symbol =
   fmap finalState $ filter isApplicableTransition $ transitions fa
     where
-      isApplicableTransition (Transition tLabel state _) =
-        tLabel == label && state `elem` currentStates
+      isApplicableTransition (Transition tSymbol state _) =
+        tSymbol == symbol && state `elem` currentStates
 
 union :: (Eq i, Eq s) => Fa i s -> Fa i s -> Fa i s
 union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
@@ -37,13 +37,13 @@ union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStat
 intersect :: Eq i => Fa i s -> Fa i s -> Fa i (s, s)
 intersect fa1@(Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
   let
-    transitionsPerLabel label =
-      [ Transition label (state1, state2) (final1, final2)
-      | (Transition label1 state1 final1) <- transitions1
-      , (Transition label2 state2 final2) <- transitions2
-      , label1 == label && label2 == label
+    transitionsPerSymbol symbol =
+      [ Transition symbol (state1, state2) (final1, final2)
+      | (Transition symbol1 state1 final1) <- transitions1
+      , (Transition symbol2 state2 final2) <- transitions2
+      , symbol1 == symbol && symbol2 == symbol
       ]
-    transitions = concatMap transitionsPerLabel (labels fa1)
+    transitions = concatMap transitionsPerSymbol (symbols fa1)
   in
     Fa
       [(state1, state2) | state1 <- initialStates1, state2 <- initialStates2]

@@ -5,17 +5,17 @@ module Tests.Common
 
 import Test.Hspec
 
-import Types.Fa (Fa, State, Label)
+import Types.Fa (Fa, State, Symbol)
 import Parsing.General (loadFa)
 
-assertFa :: FilePath -> (Fa Label State -> Bool) -> Expectation
+assertFa :: FilePath -> (Fa Symbol State -> Bool) -> Expectation
 assertFa filePath condition =
   loadFa filePath >>= \fa ->
     case fa of
       Left parseError -> expectationFailure parseError
       Right fa -> fa `shouldSatisfy` condition
 
-assert2Fa :: FilePath -> FilePath -> (Fa Label State -> Fa Label State -> Bool) -> Expectation
+assert2Fa :: FilePath -> FilePath -> (Fa Symbol State -> Fa Symbol State -> Bool) -> Expectation
 assert2Fa filePath1 filePath2 condition =
   do firstFa <- loadFa filePath1
      secondFa <- loadFa filePath2
