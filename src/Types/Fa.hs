@@ -24,14 +24,14 @@ data Transition i s =
 
 data Fa i s =
   Fa
-    { startStates :: [s]
+    { initialStates :: [s]
     , finalStates :: [s]
     , transitions :: [Transition i s]
     }
 
 states :: (Eq s) => Fa i s -> [s]
-states (Fa startStates finalStates transitions) =
-  nub (startStates ++ finalStates ++ concatMap mapper transitions)
+states (Fa initialStates finalStates transitions) =
+  nub (initialStates ++ finalStates ++ concatMap mapper transitions)
     where
       mapper (Transition _ state finalState) = [state, finalState]
 
@@ -61,10 +61,10 @@ printAutomaton fa =
   ++ "States " ++ unwords (show <$> states fa) ++ "\n"
   ++ "Final States " ++ unwords (show <$> finalStates fa) ++ "\n"
   ++ "Transitions\n"
-  ++ printStartStates (startStates fa) ++ "\n"
+  ++ printInitialStates (initialStates fa) ++ "\n"
   ++ (intercalate "\n" . fmap show) (transitions fa)
 
-printStartStates :: Show s => [s] -> String
-printStartStates =
+printInitialStates :: Show s => [s] -> String
+printInitialStates =
   intercalate "\n" . fmap (("x -> " ++) . show)
 
