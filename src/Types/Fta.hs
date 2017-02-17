@@ -1,5 +1,5 @@
 module Types.Fta
-  ( Label
+  ( Symbol
   , State
   , Rank
   , RankedAlphabet
@@ -10,7 +10,7 @@ module Types.Fta
 
 import Data.Set (Set, isSubsetOf)
 
-type Label =
+type Symbol =
   State
 
 type State =
@@ -20,18 +20,18 @@ type Rank =
   Int
 
 type RankedAlphabet =
-  Set (Label, Rank)
+  Set (Symbol, Rank)
 
 data Transition =
   Transition
-    { label :: Label
+    { symbol :: Symbol
     , inputStates :: Set State
     , finalState :: State
     } deriving (Eq, Ord)
 
 instance Show Transition where
-  show (Transition label inputStates finalState) =
-    show label ++ "(" ++ show inputStates ++ ")->" ++ show finalState
+  show (Transition symbol inputStates finalState) =
+    show symbol ++ "(" ++ show inputStates ++ ")->" ++ show finalState
 
 data Fta =
   Fta
