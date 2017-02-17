@@ -15,35 +15,35 @@ type Label =
 type State =
   String
 
-data Transition =
+data Transition s =
   Transition
     { label :: Label
-    , state :: State
-    , finalState :: State
+    , state :: s
+    , finalState :: s
     } deriving (Eq, Ord)
 
-data Fwa =
+data Fwa s =
   Fwa
-    { startStates :: [State]
-    , finalStates :: [State]
-    , transitions :: [Transition]
+    { startStates :: [s]
+    , finalStates :: [s]
+    , transitions :: [Transition s]
     }
 
-states :: Fwa -> [State]
+states :: (Eq s) => Fwa s -> [s]
 states (Fwa startStates finalStates transitions) =
   nub (startStates ++ finalStates ++ concatMap mapper transitions)
     where
       mapper (Transition _ state finalState) = [state, finalState]
 
-labels :: Fwa -> [Label]
+labels :: Fwa s -> [Label]
 labels (Fwa _ _ transitions) =
   nub (fmap label transitions)
 
-instance Show Transition where
+instance Show s => Show (Transition s) where
   show (Transition label state finalState) =
-    label ++ "(" ++ state ++ ") -> " ++ finalState
+    label ++ "(" ++ show state ++ ") -> " ++ show finalState
 
-instance Show Fwa where
+instance (Eq s, Show s) => Show (Fwa s) where
   show fwa =
     printLabelList (labels fwa) ++ "\n\n" ++ printAutomaton fwa
 
@@ -55,16 +55,16 @@ printLabelDecl :: Label -> String
 printLabelDecl label =
   label ++ ":1"
 
-printAutomaton :: Fwa -> String
+printAutomaton :: (Eq s, Show s) => Fwa s -> String
 printAutomaton fwa =
   "Automaton A\n"
-  ++ "States " ++ unwords (states fwa) ++ "\n"
-  ++ "Final States " ++ unwords (finalStates fwa) ++ "\n"
+  ++ "States " ++ unwords (show <$> states fwa) ++ "\n"
+  ++ "Final States " ++ unwords (show <$> finalStates fwa) ++ "\n"
   ++ "Transitions\n"
   ++ printStartStates (startStates fwa) ++ "\n"
   ++ (intercalate "\n" . fmap show) (transitions fwa)
 
-printStartStates :: [State] -> String
+printStartStates :: Show s => [s] -> String
 printStartStates =
-  intercalate "\n" . fmap (\state -> "x -> " ++ state)
+  intercalate "\n" . fmap (("x -> " ++) . show)
 

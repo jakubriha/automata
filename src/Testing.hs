@@ -5,7 +5,7 @@ module Testing
 import Types.Fwa
 import Parsing.General (loadFwa)
 
-test2Fwa :: FilePath -> FilePath -> (Fwa -> Fwa -> Fwa) -> IO ()
+test2Fwa :: (Eq s, Show s) => FilePath -> FilePath -> (Fwa State -> Fwa State -> Fwa s) -> IO ()
 test2Fwa filePath1 filePath2 operation =
   do firstFwa <- loadFwa filePath1
      secondFwa <- loadFwa filePath2
