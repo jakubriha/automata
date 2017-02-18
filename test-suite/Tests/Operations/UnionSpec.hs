@@ -13,8 +13,5 @@ spec =
   describe "Union of" $
     describe "Fa defined in oneStateFa.txt and oneStateFa.txt" $
       it "accepts empty language" $
-        assert2Fa (testDirectory ++ "oneStateFa.txt") (testDirectory ++ "oneStateFa.txt") (\fa1 fa2 -> run (fa1 `union` fa2) (charsToSymbols ""))
-
-testDirectory =
-  "test-suite/AutomataExamples/"
+        assert2Fa "oneStateFa.txt" "oneStateFa.txt" (\fa1 fa2 -> run (fa1 `union` fa2) (charsToSymbols ""))
 

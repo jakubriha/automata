@@ -14,19 +14,16 @@ spec =
     describe "defined in oneStateFa.txt" $ do
 
       it "accepts empty language" $
-        assertFa (testDirectory ++ "oneStateFa.txt") (\fa -> run fa [])
+        assertFa "oneStateFa.txt" (\fa -> run fa [])
 
       it "doesn't accept non-empty language" $
-        assertFa (testDirectory ++ "oneStateFa.txt") (\fa -> not $ run fa (charsToSymbols "Hello World!"))
+        assertFa "oneStateFa.txt" (\fa -> not $ run fa (charsToSymbols "Hello World!"))
 
     describe "defined in 0.txt" $ do
 
       it "accepts 'a17 a18 a18 a2'" $
-        assertFa (testDirectory ++ "0.txt") (\fa -> run fa ["a17", "a18", "a18", "a2"])
+        assertFa "0.txt" (\fa -> run fa ["a17", "a18", "a18", "a2"])
 
       it "doesn't accept 'a18 a18 a2'" $
-        assertFa (testDirectory ++ "0.txt") (\fa -> not $ run fa ["a18", "a18", "a2"])
-
-testDirectory =
-  "test-suite/AutomataExamples/"
+        assertFa "0.txt" (\fa -> not $ run fa ["a18", "a18", "a2"])
 
