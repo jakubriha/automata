@@ -50,6 +50,7 @@ test-suite automata-test
   other-modules:       Tests.Common
                      , Tests.Operations.DeterminizeSpec
                      , Tests.Operations.IntersectSpec
+                     , Tests.Operations.IsEmptySpec
                      , Tests.Operations.RunSpec
                      , Tests.Operations.UnionSpec
                      , Tests.Parsing.GeneralSpec

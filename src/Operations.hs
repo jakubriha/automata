@@ -4,6 +4,7 @@ module Operations
   , Operations.union
   , Operations.intersect
   , determinize
+  , isEmpty
   ) where
 
 import Types.Fa
@@ -75,4 +76,8 @@ determinize fa =
     finalStates = (nub . filter (containFinalState fa) . concatMap mapper) transitions
   in
     Fa [initialStates fa] finalStates transitions
+
+isEmpty :: (Eq sym, Eq sta) => Fa sym sta -> Bool
+isEmpty =
+  (== []) . finalStates . determinize
 
