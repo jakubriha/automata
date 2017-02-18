@@ -13,11 +13,8 @@ spec =
   describe "Fwa" $ do
 
     it "defined in 0.txt is not empty" $
-      assertFa (testDirectory ++ "0.txt") (not . isEmpty)
+      assertFa "0.txt" (not . isEmpty)
 
     it "defined in 3.txt is empty" $
-      assertFa (testDirectory ++ "3.txt") isEmpty
-
-testDirectory =
-  "test-suite/AutomataExamples/"
+      assertFa "3.txt" isEmpty
 

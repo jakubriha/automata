@@ -14,14 +14,11 @@ spec =
     describe "defined in 2.txt" $ do
 
       it "accepts 'a a' after determinization" $
-        assertFa (testDirectory ++ "2.txt") (\fa -> run (determinize fa) (charsToSymbols "aa"))
+        assertFa "2.txt" (\fa -> run (determinize fa) (charsToSymbols "aa"))
 
       it "accepts 'a b' after determinization" $
-        assertFa (testDirectory ++ "2.txt") (\fa -> run (determinize fa) (charsToSymbols "ab"))
+        assertFa "2.txt" (\fa -> run (determinize fa) (charsToSymbols "ab"))
 
       it "doesn't accept 'b b' after determinization" $
-        assertFa (testDirectory ++ "2.txt") (\fa -> not $ run (determinize fa) (charsToSymbols "bb"))
-
-testDirectory =
-  "test-suite/AutomataExamples/"
+        assertFa "2.txt" (\fa -> not $ run (determinize fa) (charsToSymbols "bb"))
 
