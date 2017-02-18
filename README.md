@@ -4,10 +4,10 @@ Implementation of an efficient functional library for finite automata (FA). This
 * Membership testing (located in `module Operations.run`),
 * Union (located in module `Operations.union`),
 * Intersection (located in module `Operations.intersect`),
+* Determinization (located in module `Operations.determinize`),
 
 The library will also provide the following operations in the future:
 
-* Determinization (located in module `Operations.determinize`),
 * Complement (located in module `Operations.complement`),
 * Emptiness testing (located in module `Operations.empty`),
 * Inclusion testing (located in module `Operations.inclusion`),

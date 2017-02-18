@@ -3,6 +3,7 @@ module Operations
   , run
   , Operations.union
   , Operations.intersect
+  , determinize
   ) where
 
 import Types.Fa
@@ -31,7 +32,7 @@ union :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym sta -> Fa sym sta
 union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
   Fa
     (initialStates1 `List.union` initialStates2)
-    (finalStates1 `List.union`  finalStates2)
+    (finalStates1 `List.union` finalStates2)
     (transitions1 `List.union` transitions2)
 
 intersect :: Eq sym => Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
@@ -49,4 +50,26 @@ intersect fa1@(Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 f
       [(state1, state2) | state1 <- initialStates1, state2 <- initialStates2]
       [(state1, state2) | state1 <- finalStates1, state2 <- finalStates2]
       transitions
+
+determinize' :: (Eq sym, Eq sta) => [sta] -> [Transition sym [sta]] -> Fa sym sta -> [Transition sym [sta]]
+determinize' current transitions fa =
+  let
+    postState = post fa current
+    transition label = Transition label current (postState label)
+    toReturn label =
+      if transition label `elem` transitions
+        then transitions
+        else determinize' (postState label) (transition label:transitions) fa
+  in
+    nub $ concatMap toReturn (symbols fa)
+
+determinize :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym [sta]
+determinize fa =
+  let
+    transitions = determinize' (initialStates fa) [] fa
+    mapper (Transition _ state final) = [state, final]
+    filt state = state `List.intersect` Types.Fa.finalStates fa /= []
+    finalStates = (nub . filter filt . concatMap mapper) transitions
+  in
+    Fa [initialStates fa] finalStates transitions
 
