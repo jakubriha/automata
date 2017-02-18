@@ -12,12 +12,16 @@ import Data.List as List
 charsToSymbols :: String -> [Symbol]
 charsToSymbols = fmap (: [])
 
+containFinalState :: Eq sta => Fa sym sta -> [sta] -> Bool
+containFinalState fa states =
+  states `List.intersect` finalStates fa /= []
+
 run :: (Eq sym, Eq sta) => Fa sym sta -> [sym] -> Bool
 run fa =
   run' (initialStates fa)
     where
       run' currentStates [] =
-        currentStates `List.intersect` finalStates fa /= []
+        containFinalState fa currentStates
       run' currentStates (x:xs) =
         run' (post fa currentStates x) xs
 
@@ -68,8 +72,7 @@ determinize fa =
   let
     transitions = determinize' (initialStates fa) [] fa
     mapper (Transition _ state final) = [state, final]
-    filt state = state `List.intersect` Types.Fa.finalStates fa /= []
-    finalStates = (nub . filter filt . concatMap mapper) transitions
+    finalStates = (nub . filter (containFinalState fa) . concatMap mapper) transitions
   in
     Fa [initialStates fa] finalStates transitions
 
