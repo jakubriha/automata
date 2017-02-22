@@ -4,6 +4,7 @@ module Operations
   , Operations.union
   , Operations.intersect
   , determinize
+  , complement
   , isEmpty
   ) where
 
@@ -76,6 +77,13 @@ determinize fa =
     finalStates = (nub . filter (containFinalState fa) . concatMap mapper) transitions
   in
     Fa [initialStates fa] finalStates transitions
+
+complement :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym [sta]
+complement =
+  updateFinalStates . determinize
+    where
+      updateFinalStates fa@(Fa initialStates finalStates transitions) =
+        Fa initialStates (states fa \\ finalStates) transitions
 
 isEmpty :: (Eq sym, Eq sta) => Fa sym sta -> Bool
 isEmpty =
