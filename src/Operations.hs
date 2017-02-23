@@ -64,8 +64,8 @@ determinize' current transitions fa =
     transition label = Transition label current (postState label)
     toReturn label =
       if transition label `elem` transitions
-        then transitions
-        else determinize' (postState label) (transition label:transitions) fa
+        then []
+        else transition label : determinize' (postState label) (transition label : transitions) fa
   in
     nub $ concatMap toReturn (symbols fa)
 
