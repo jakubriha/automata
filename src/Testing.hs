@@ -1,9 +1,17 @@
 module Testing
-  ( test2Fa
+  ( testFa
+  , test2Fa
   ) where
 
 import Types.Fa
 import Parsing.General (loadFa)
+
+testFa :: (Eq sym, Show sym, Eq sta, Show sta) => FilePath -> (Fa Symbol State -> Fa sym sta) -> IO ()
+testFa filePath operation =
+  loadFa filePath >>= executeOperation
+    where
+      executeOperation (Left parseError) = putStrLn parseError
+      executeOperation (Right fa) = print (operation fa) 
 
 test2Fa :: (Eq sym, Show sym, Eq sta, Show sta) => FilePath -> FilePath -> (Fa Symbol State -> Fa Symbol State -> Fa sym sta) -> IO ()
 test2Fa filePath1 filePath2 operation =
