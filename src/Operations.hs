@@ -6,6 +6,7 @@ module Operations
   , determinize
   , complement
   , isEmpty
+  , isSubsetOf
   ) where
 
 import Types.Fa
@@ -88,4 +89,8 @@ complement =
 isEmpty :: (Eq sym, Eq sta) => Fa sym sta -> Bool
 isEmpty =
   (== []) . finalStates . determinize
+
+isSubsetOf :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym sta -> Bool
+isSubsetOf fa1 fa2 =
+  isEmpty $ fa1 `Operations.intersect` complement fa2
 

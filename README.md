@@ -7,10 +7,10 @@ Implementation of an efficient functional library for finite automata (FA). This
 * Determinization (located in module `Operations.determinize`),
 * Complement (located in module `Operations.complement`),
 * Emptiness testing (located in module `Operations.isEmpty`),
+* Inclusion testing (located in module `Operations.isSubsetOf`),
 
 The library will also provide the following operations in the future:
 
-* Inclusion testing (located in module `Operations.inclusion`),
 * Universality testing (located in module `Operations.universality`).
 
 ## Experimenting with the library
