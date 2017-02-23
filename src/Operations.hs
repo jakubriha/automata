@@ -61,11 +61,11 @@ determinize' :: (Eq sym, Eq sta) => [sta] -> [Transition sym [sta]] -> Fa sym st
 determinize' current transitions fa =
   let
     postState = post fa current
-    transition label = Transition label current (postState label)
-    toReturn label =
-      if transition label `elem` transitions
+    transition symbol = Transition symbol current (postState symbol)
+    toReturn symbol =
+      if transition symbol `elem` transitions
         then []
-        else transition label : determinize' (postState label) (transition label : transitions) fa
+        else transition symbol : determinize' (postState symbol) (transition symbol : transitions) fa
   in
     nub $ concatMap toReturn (symbols fa)
 
