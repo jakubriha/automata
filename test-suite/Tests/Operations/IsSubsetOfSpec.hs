@@ -11,9 +11,9 @@ import Operations (isSubsetOf)
 spec :: Spec
 spec =
   describe "FA" $ do
-      it "defined in 0.txt is subset of FA defined in oneStateFa.txt" $
+      it "0.txt is subset of FA oneStateFa.txt" $
         assert2Fa "0.txt" "oneStateFa.txt" isSubsetOf
 
-      it "defined in 1.txt is subset of FA defined in 0.txt" $
+      it "1.txt is subset of FA 0.txt" $
         assert2Fa "1.txt" "0.txt" isSubsetOf
 

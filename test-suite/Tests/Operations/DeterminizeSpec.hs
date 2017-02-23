@@ -10,15 +10,15 @@ import Operations (charsToSymbols, determinize, run)
 
 spec :: Spec
 spec =
-  describe "fa" $ do
-    describe "defined in 2.txt" $ do
+  describe "Determinized FA" $ do
+    describe "2.txt" $ do
 
-      it "accepts 'a a' after determinization" $
+      it "accepts 'a a'" $
         assertFa "2.txt" (\fa -> run (determinize fa) (charsToSymbols "aa"))
 
-      it "accepts 'a b' after determinization" $
+      it "accepts 'a b'" $
         assertFa "2.txt" (\fa -> run (determinize fa) (charsToSymbols "ab"))
 
-      it "doesn't accept 'b b' after determinization" $
+      it "doesn't accept 'b b'" $
         assertFa "2.txt" (\fa -> not $ run (determinize fa) (charsToSymbols "bb"))
 

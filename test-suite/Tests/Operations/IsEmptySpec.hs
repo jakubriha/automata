@@ -10,11 +10,11 @@ import Operations (charsToSymbols, isEmpty)
 
 spec :: Spec
 spec =
-  describe "Fwa" $ do
+  describe "FA" $ do
 
-    it "defined in 0.txt is not empty" $
+    it "0.txt is not empty" $
       assertFa "0.txt" (not . isEmpty)
 
-    it "defined in 3.txt is empty" $
+    it "3.txt is empty" $
       assertFa "3.txt" isEmpty
 

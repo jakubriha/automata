@@ -10,8 +10,8 @@ import Operations (charsToSymbols, run, union)
 
 spec :: Spec
 spec =
-  describe "Union of" $
-    describe "Fa defined in oneStateFa.txt and oneStateFa.txt" $
-      it "accepts empty language" $
+  describe "Union of FAs" $
+    describe "oneStateFa.txt and oneStateFa.txt" $
+      it "accepts empty string" $
         assert2Fa "oneStateFa.txt" "oneStateFa.txt" (\fa1 fa2 -> run (fa1 `union` fa2) (charsToSymbols ""))
 

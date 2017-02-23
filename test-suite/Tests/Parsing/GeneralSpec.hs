@@ -11,18 +11,18 @@ import Types.Fa as Fa
 
 spec :: Spec
 spec = do
-  describe "Fa" $ do
+  describe "FA" $ do
 
-    it "is parsed from file 0.txt" $ do
+    it "is parsed from 0.txt" $ do
       canParseFa "0.txt"
 
-    it "has correct state count in file oneStateFa.txt" $ do
+    it "has correct state count in oneStateFa.txt" $ do
       assertFa "oneStateFa.txt" ((== 1) . length . Fa.states)
 
-    it "has correct state count in file 0.txt" $ do
+    it "has correct state count in 0.txt" $ do
       assertFa "0.txt" ((== 4) . length . Fa.states)
 
-    it "has correct transition count in file 0.txt" $ do
+    it "has correct transition count in 0.txt" $ do
       assertFa "0.txt" ((== 13) . length . Fa.transitions)
 
 canParseFa :: FilePath -> Expectation
