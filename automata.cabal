@@ -52,6 +52,7 @@ test-suite automata-test
                      , Tests.Operations.DeterminizeSpec
                      , Tests.Operations.IntersectSpec
                      , Tests.Operations.IsEmptySpec
+                     , Tests.Operations.IsSubsetOfSpec
                      , Tests.Operations.RunSpec
                      , Tests.Operations.UnionSpec
                      , Tests.Parsing.GeneralSpec
