@@ -1,17 +1,14 @@
 # Automata [![Build Status](https://travis-ci.org/jakubriha/automata.svg?branch=master)](https://travis-ci.org/jakubriha/automata)
-Implementation of an efficient functional library for finite automata (FA). This library is intended to be used primarily in the field of the formal verification. Available operations on finite automata correspond to this usage. The library provides the following operations:
+Implementation of an efficient functional library for finite automata (FA). This library is intended to be used primarily in the field of the formal verification. Available operations on finite automata correspond to this usage. The library provides the following operations, which are all located in the module `Operations`:
 
-* Membership testing (located in `module Operations.run`),
-* Union (located in module `Operations.union`),
-* Intersection (located in module `Operations.intersect`),
-* Determinization (located in module `Operations.determinize`),
-* Complement (located in module `Operations.complement`),
-* Emptiness testing (located in module `Operations.isEmpty`),
-* Inclusion testing (located in module `Operations.isSubsetOf`),
-
-The library will also provide the following operations in the future:
-
-* Universality testing (located in module `Operations.universality`).
+* Membership testing (function `run`),
+* Union (function `union`),
+* Intersection (function `intersect`),
+* Determinization (function `determinize`),
+* Complement (function `complement`),
+* Emptiness testing (function `isEmpty`),
+* Inclusion testing (function `isSubsetOf`),
+* Universality testing (function `isUniversal`).
 
 ## Experimenting with the library
 This library uses [Stack](https://docs.haskellstack.org) as a development tool. It is necessary to install Stack in order to build the library. Stack docs contain the [installation instructions](https://docs.haskellstack.org/en/stable/README/#how-to-install).
