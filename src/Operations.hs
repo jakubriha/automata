@@ -7,6 +7,7 @@ module Operations
   , complement
   , isEmpty
   , isSubsetOf
+  , isUniversal
   ) where
 
 import Types.Fa
@@ -93,4 +94,12 @@ isEmpty =
 isSubsetOf :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym sta -> Bool
 isSubsetOf fa1 fa2 =
   isEmpty $ fa1 `Operations.intersect` complement fa2
+
+isUniversal :: (Eq sym, Eq sta) => Fa sym sta -> Bool
+isUniversal fa =
+  not (null $ states fa) && (universalFA `isSubsetOf` fa)
+    where
+      state = head $ states fa
+      transitions = fmap (\symbol -> Transition symbol state state) (symbols fa)
+      universalFA = Fa [state] [state] transitions
 
