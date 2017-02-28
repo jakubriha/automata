@@ -15,7 +15,8 @@ cabal-version:       >=1.10
 
 library
   hs-source-dirs:      src
-  exposed-modules:     Operations
+  exposed-modules:     Operations.Regular
+                     , Operations.Antichain
                      , Testing
                      , Helpers
                      , Parsing.General

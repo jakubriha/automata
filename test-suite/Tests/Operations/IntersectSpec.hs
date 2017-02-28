@@ -6,7 +6,7 @@ import Test.Hspec
 import Test.QuickCheck
 
 import Tests.Common (assert2Fa)
-import Operations (charsToSymbols, run, intersect)
+import Operations.Regular (charsToSymbols, run, intersect)
 
 spec :: Spec
 spec =

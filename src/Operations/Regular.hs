@@ -1,8 +1,10 @@
-module Operations
+module Operations.Regular
   ( charsToSymbols
+  , isMacrostateAccepting
   , run
-  , Operations.union
-  , Operations.intersect
+  , post
+  , union
+  , intersect
   , determinize
   , complement
   , isEmpty
@@ -11,13 +13,14 @@ module Operations
   ) where
 
 import Types.Fa
-import Data.List as List
+import qualified Data.List as List
+import Data.List ((\\), nub)
 
 charsToSymbols :: String -> [Symbol]
 charsToSymbols = fmap (: [])
 
-containFinalState :: Eq sta => Fa sym sta -> [sta] -> Bool
-containFinalState fa states =
+isMacrostateAccepting :: Eq sta => Fa sym sta -> [sta] -> Bool
+isMacrostateAccepting fa states =
   states `List.intersect` finalStates fa /= []
 
 run :: (Eq sym, Eq sta) => Fa sym sta -> [sym] -> Bool
@@ -25,7 +28,7 @@ run fa =
   run' (initialStates fa)
     where
       run' currentStates [] =
-        containFinalState fa currentStates
+        isMacrostateAccepting fa currentStates
       run' currentStates (x:xs) =
         run' (post fa currentStates x) xs
 
@@ -76,7 +79,7 @@ determinize fa =
   let
     transitions = determinize' (initialStates fa) [] fa
     mapper (Transition _ state final) = [state, final]
-    finalStates = (nub . filter (containFinalState fa) . concatMap mapper) transitions
+    finalStates = (nub . filter (isMacrostateAccepting fa) . concatMap mapper) transitions
   in
     Fa [initialStates fa] finalStates transitions
 
@@ -93,7 +96,7 @@ isEmpty =
 
 isSubsetOf :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym sta -> Bool
 isSubsetOf fa1 fa2 =
-  isEmpty $ fa1 `Operations.intersect` complement fa2
+  isEmpty $ fa1 `intersect` complement fa2
 
 isUniversal :: (Eq sym, Eq sta) => Fa sym sta -> Bool
 isUniversal fa =
