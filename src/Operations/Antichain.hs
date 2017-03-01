@@ -31,8 +31,8 @@ reducer acceptingMacrostate (ReturnState processed next) p
         ReturnState processed' next'
 
 foreach :: Eq sta => ([sta] -> Bool) -> ([sta] -> [[sta]]) -> [[sta]] -> [[sta]] -> [sta] -> ForeachReturn sta
-foreach acceptingMacrostate po processed next r =
-  foldl' (reducer acceptingMacrostate) (ReturnState processed next) (po r)
+foreach acceptingMacrostate post processed next r =
+  foldl' (reducer acceptingMacrostate) (ReturnState processed next) (post r)
 
 isUniversal' :: Eq sta => ([sta] -> Bool) -> ([sta] -> [[sta]]) -> [[sta]] -> [[sta]] -> Bool
 isUniversal' acceptingMacrostate post processed next =

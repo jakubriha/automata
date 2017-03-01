@@ -5,6 +5,7 @@ States 01 02 03 04
 Final States 01 02 03
 Transitions
 x -> 01
+x -> 02
 b(01) -> 01
 a(01) -> 02
 b(02) -> 02
