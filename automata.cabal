@@ -42,7 +42,7 @@ executable automata-exe
 
 test-suite automata-test
   type:                exitcode-stdio-1.0
-  hs-source-dirs:      test-suite
+  hs-source-dirs:      tests
   main-is:             Spec.hs
   build-depends:       base
                      , automata
