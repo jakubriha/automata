@@ -10,7 +10,7 @@ import Parsing.General (loadFa)
 
 assertFa :: FilePath -> (Fa Symbol State -> Bool) -> Expectation
 assertFa filePath condition =
-  loadFa ("test-suite/AutomataExamples/" ++ filePath) >>= \fa ->
+  loadFa ("tests/Examples/" ++ filePath) >>= \fa ->
     case fa of
       Left parseError -> expectationFailure parseError
       Right fa -> fa `shouldSatisfy` condition
@@ -18,8 +18,8 @@ assertFa filePath condition =
 assert2Fa :: FilePath -> FilePath -> (Fa Symbol State -> Fa Symbol State -> Bool) -> Expectation
 assert2Fa filePath1 filePath2 condition =
   do
-    firstFa <- loadFa ("test-suite/AutomataExamples/" ++ filePath1)
-    secondFa <- loadFa ("test-suite/AutomataExamples/" ++ filePath2)
+    firstFa <- loadFa ("tests/Examples/" ++ filePath1)
+    secondFa <- loadFa ("tests/Examples/" ++ filePath2)
     case firstFa of
       Left parseError -> expectationFailure parseError
       Right fa1 -> case secondFa of

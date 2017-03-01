@@ -55,4 +55,3 @@ post' fa state = fmap (($ state) . flip (post fa)) (symbols fa)
 isUniversal :: (Eq sym, Eq sta) => Fa sym sta -> Bool
 isUniversal fa =
   isMacrostateAccepting fa (initialStates fa) && isUniversal' (isMacrostateAccepting fa) (post' fa) [] [initialStates fa]
-

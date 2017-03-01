@@ -21,7 +21,7 @@ After the installation of Stack, you can start the REPL by executing `stack ghci
 
 The function `Testing.test2Fa` allows us to load two FAs from a text file and execute a binary operation on them. Consider the following expression executed in GHCi:
 
-```Testing.test2Fa "test-suite/AutomataExamples/0.txt" "test-suite/AutomataExamples/1.txt" Operations.Regular.intersect```
+```Testing.test2Fa "tests/Examples/0.txt" "tests/Examples/1.txt" Operations.Regular.intersect```
 
-It loads two FAs (located in `test-suite/AutomataExamples/{0,1}.txt`), performs intersection on them, and prints the resulting FA on the standard output. There is also a similar function `Testing.testFa` that loads only one FA and exetutes an unary operation (such as `Operations.Antichain.isUnivesal`) on it.
+It loads two FAs (located in `tests/Examples/{0,1}.txt`), performs intersection on them, and prints the resulting FA on the standard output. There is also a similar function `Testing.testFa` that loads only one FA and exetutes an unary operation (such as `Operations.Antichain.isUnivesal`) on it.
 
