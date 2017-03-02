@@ -1,10 +1,13 @@
 module Operations.Antichain
   ( isUniversal
+  , while
   ) where
 
-import Types.Fa
+import Types.Fa (Fa, initialStates, symbols)
 import Operations.Regular (isMacrostateAccepting, post)
 import Data.List (union, intersect, foldl', (\\))
+import Control.Monad.State
+import Control.Arrow (second)
 
 isSubsetOf :: Eq a => [a] -> [a] -> Bool
 isSubsetOf first second =
@@ -14,44 +17,62 @@ isLowerOrEqual :: Eq sta => [sta] -> [sta] -> Bool
 isLowerOrEqual =
   isSubsetOf
 
-data ForeachReturn sta = ReturnFalse | ReturnState [[sta]] [[sta]]
-
-reducer :: Eq sta => ([sta] -> Bool) -> ForeachReturn sta -> [sta] -> ForeachReturn sta
-reducer _ ReturnFalse _ = ReturnFalse
-reducer acceptingMacrostate (ReturnState processed next) p
-  | not $ acceptingMacrostate p = ReturnFalse
-  | not $ or [s `isLowerOrEqual` p | s <- processed `union` next] = remove p
-  | otherwise = ReturnState processed next
-  where
-    remove p =
-      let
-        processed' = processed \\ [s | s <- processed, p `isLowerOrEqual` s ]
-        next' = p : (next \\ [s | s <- next, p `isLowerOrEqual` s ])
-      in
-        ReturnState processed' next'
-
-foreach :: Eq sta => ([sta] -> Bool) -> ([sta] -> [[sta]]) -> [[sta]] -> [[sta]] -> [sta] -> ForeachReturn sta
-foreach acceptingMacrostate post processed next r =
-  foldl' (reducer acceptingMacrostate) (ReturnState processed next) (post r)
-
-isUniversal' :: Eq sta => ([sta] -> Bool) -> ([sta] -> [[sta]]) -> [[sta]] -> [[sta]] -> Bool
-isUniversal' acceptingMacrostate post processed next =
-  case next of
-    [] -> True
-    _ ->
-      let
-        next' = tail next
-        r = head next
-        processed' = r : processed
-        result = foreach acceptingMacrostate post processed' next' r
-      in
-        case result of
-          ReturnState processed'' next'' -> isUniversal' acceptingMacrostate post processed'' next''
-          _ -> False
-
 post' :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> [[sta]]
 post' fa state = fmap (($ state) . flip (post fa)) (symbols fa)
 
-isUniversal :: (Eq sym, Eq sta) => Fa sym sta -> Bool
+type InnerState sta = ([[sta]], [[sta]])
+type Post sta = [sta] -> [[sta]]
+type IsRejecting sta = [sta] -> Bool
+
+isUniversal:: (Eq sym, Eq sta) => Fa sym sta -> Bool
 isUniversal fa =
-  isMacrostateAccepting fa (initialStates fa) && isUniversal' (isMacrostateAccepting fa) (post' fa) [] [initialStates fa]
+  isMacrostateAccepting fa (initialStates fa) && while'
+    where
+      while' =
+        evalState (while (post' fa) (not . isMacrostateAccepting fa)) ([], [initialStates fa])
+
+moveRFromNextToProcessed :: State (InnerState sta) [sta]
+moveRFromNextToProcessed = state $ \(processed, r : next') ->
+  (r, (r : processed, next'))
+
+while :: Eq sta => Post sta -> IsRejecting sta -> State (InnerState sta) Bool
+while post isRejecting = do
+  (_, next) <- get
+  if not $ null next
+    then do
+      r <- moveRFromNextToProcessed
+      shouldExit <- processPostStates (post r) isRejecting
+      if shouldExit
+        then return False
+        else while post isRejecting
+    else return True
+
+processPostStates :: Eq sta => [[sta]] -> IsRejecting sta -> State (InnerState sta) Bool
+processPostStates [] _ =
+  return False
+processPostStates (p : ps) isRejecting =
+  if isRejecting p
+    then return True
+    else do
+      (processed, next) <- get
+      if not $ or [s `isLowerOrEqual` p | s <- processed `union` next]
+        then do
+          removeFromStateAllGreaterThan p
+          addToNext p
+          processPostStates ps isRejecting
+        else processPostStates ps isRejecting
+
+removeFromStateAllGreaterThan :: Eq sta => [sta] -> State (InnerState sta) ()
+removeFromStateAllGreaterThan p = do
+  (processed, next) <- get
+  state $ \(processed, next) ->
+    let
+      processed' = processed \\ [s | s <- processed, p `isLowerOrEqual` s ]
+      next' = next \\ [s | s <- next, p `isLowerOrEqual` s ]
+    in
+      ((), (processed', next'))
+
+addToNext :: [sta] -> State (InnerState sta) ()
+addToNext p =
+  state $ \(processed, next) ->
+    ((), (processed, p : next))
