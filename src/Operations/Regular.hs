@@ -14,6 +14,8 @@ module Operations.Regular
 
 import Types.Fa
 import qualified Data.List as List
+import qualified Data.Set as Set
+import Data.Set (Set, empty, toList, fromList, unions, intersection)
 import Data.List ((\\), nub)
 
 charsToSymbols :: String -> [Symbol]
@@ -90,19 +92,39 @@ complement =
       updateFinalStates fa@(Fa initialStates finalStates transitions) =
         Fa initialStates (states fa \\ finalStates) transitions
 
-isEmpty :: (Eq sym, Eq sta) => Fa sym sta -> Bool
+isEmpty :: (Eq sym, Ord sta) => Fa sym sta -> Bool
 isEmpty =
-  (== []) . finalStates . determinize
+  not . hasTerminatingPath
 
-isSubsetOf :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym sta -> Bool
+hasTerminatingPath :: (Eq sym, Ord sta) => Fa sym sta -> Bool
+hasTerminatingPath fa =
+  not (null $ finalStates fa) && hasTerminatingPath' empty (fromList $ initialStates fa)
+    where
+      hasTerminatingPath' processed next
+        | null next = False
+        | not $ null $ next `intersection` fromList (finalStates fa) = True
+        | otherwise = 
+          let
+            processed' = processed `Set.union` next
+            next' = newStates fa next Set.\\ processed'
+          in
+            hasTerminatingPath' processed' next'
+
+newStates :: (Eq sym, Ord sta) => Fa sym sta -> Set sta -> Set sta
+newStates fa =
+  fromList . nub . concatMap (concat . post' fa . (: []))
+
+post' :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> [[sta]]
+post' fa state = fmap (($ state) . flip (post fa)) (symbols fa)
+
+isSubsetOf :: (Eq sym, Ord sta) => Fa sym sta -> Fa sym sta -> Bool
 isSubsetOf fa1 fa2 =
   isEmpty $ fa1 `intersect` complement fa2
 
-isUniversal :: (Eq sym, Eq sta) => Fa sym sta -> Bool
+isUniversal :: (Eq sym, Ord sta) => Fa sym sta -> Bool
 isUniversal fa =
   not (null $ states fa) && (universalFA `isSubsetOf` fa)
     where
       state = head $ states fa
       transitions = fmap (\symbol -> Transition symbol state state) (symbols fa)
       universalFA = Fa [state] [state] transitions
-

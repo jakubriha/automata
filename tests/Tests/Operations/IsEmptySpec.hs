@@ -18,3 +18,5 @@ spec =
     it "3.txt is empty" $
       assertFa "3.txt" isEmpty
 
+    it "oneStateFa.txt is not empty" $
+      assertFa "oneStateFa.txt" (not . isEmpty)
