@@ -7,7 +7,6 @@ import Types.Fa (Fa, initialStates, symbols)
 import Operations.Regular (isMacrostateAccepting, post)
 import Data.List (union, intersect, foldl', (\\))
 import Control.Monad.State
-import Control.Arrow (second)
 
 isSubsetOf :: Eq a => [a] -> [a] -> Bool
 isSubsetOf first second =
