@@ -81,9 +81,10 @@ determinize fa =
   let
     transitions = determinize' (initialStates fa) [] fa
     mapper (Transition _ state final) = [state, final]
+    finalStatesFromInitialStates = [initialStates fa | isMacrostateAccepting fa (initialStates fa)]
     finalStates = (nub . filter (isMacrostateAccepting fa) . concatMap mapper) transitions
   in
-    Fa [initialStates fa] finalStates transitions
+    Fa [initialStates fa] (finalStatesFromInitialStates ++ finalStates) transitions
 
 complement :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym [sta]
 complement =
