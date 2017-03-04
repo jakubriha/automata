@@ -29,6 +29,17 @@ data Fa sym sta =
     , transitions :: [Transition sym sta]
     }
 
+instance Functor (Fa sym) where
+  fmap f fa =
+    let
+      initial = (fmap f . initialStates) fa
+      final = (fmap f . finalStates) fa
+      transitionMapper (Transition symbol state finalState) =
+        Transition symbol (f state) (f finalState)
+      trans = (fmap transitionMapper . transitions) fa
+    in
+      Fa initial final trans
+
 states :: (Eq sta) => Fa sym sta -> [sta]
 states (Fa initialStates finalStates transitions) =
   nub (initialStates ++ finalStates ++ concatMap mapper transitions)
