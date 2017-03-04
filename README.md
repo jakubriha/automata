@@ -17,11 +17,12 @@ The library also provides one operation implemented using the [antichain-based a
 ## Experimenting with the library
 This library uses [Stack](https://docs.haskellstack.org) as a development tool. It is necessary to install Stack in order to build the library. Stack docs contain the [installation instructions](https://docs.haskellstack.org/en/stable/README/#how-to-install).
 
-After the installation of Stack, you can start the REPL by executing `stack ghci` in the root of the library. This will download all required dependencies and start GHCi with all library modules loaded.
+After the installation of Stack, you can start the REPL by executing `stack ghci` in the root of the library. It will download all required dependencies and start GHCi with all library modules loaded. You can use the function `unsafeLoadFa :: FilePath -> Fa Symbol State` located in the module `Testing` to load an FA from a [Timbuk format](http://www.fit.vutbr.cz/research/groups/verifit/tools/libvata/#input) file. The following example shows how to load two FAs from files `{0, 1}.txt` and, after that, how to execute a binary operation on them in GHCi:
 
-The function `Testing.test2Fa` allows us to load two FAs from a text file and execute a binary operation on them. Consider the following expression executed in GHCi:
+```
+> let fstFa = unsafeLoadFa "tests/Examples/0.txt"
+> let sndFa = unsafeLoadFa "tests/Examples/1.txt"
+> fstFa `intersect` sndFa
+```
 
-```Testing.test2Fa "tests/Examples/0.txt" "tests/Examples/1.txt" Operations.Regular.intersect```
-
-It loads two FAs (located in `tests/Examples/{0,1}.txt`), performs intersection on them, and prints the resulting FA on the standard output. There is also a similar function `Testing.testFa` that loads only one FA and exetutes an unary operation (such as `Operations.Antichain.isUnivesal`) on it.
-
+The resulting FA of the intersection operation will be printed in the GHCi terminal in the Timbuk format.
