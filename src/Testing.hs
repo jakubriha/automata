@@ -1,25 +1,14 @@
 module Testing
-  ( testFa
-  , test2Fa
+  ( unsafeLoadFa
   ) where
 
-import Types.Fa
+import Types.Fa (Fa, Symbol, State)
 import Parsing.General (loadFa)
+import System.IO.Unsafe (unsafePerformIO)
 
-testFa :: (Eq sym, Show sym, Eq sta, Show sta) => FilePath -> (Fa Symbol State -> Fa sym sta) -> IO ()
-testFa filePath operation =
-  loadFa filePath >>= executeOperation
+unsafeLoadFa :: FilePath -> Fa Symbol State
+unsafeLoadFa =
+  getFa . unsafePerformIO . loadFa
     where
-      executeOperation (Left parseError) = putStrLn parseError
-      executeOperation (Right fa) = print (operation fa) 
-
-test2Fa :: (Eq sym, Show sym, Eq sta, Show sta) => FilePath -> FilePath -> (Fa Symbol State -> Fa Symbol State -> Fa sym sta) -> IO ()
-test2Fa filePath1 filePath2 operation =
-  do firstFa <- loadFa filePath1
-     secondFa <- loadFa filePath2
-     case firstFa of
-       Left parseError -> putStrLn parseError
-       Right fa1 -> case secondFa of
-                  Left parseError -> putStrLn parseError
-                  Right fa2 -> print (operation fa1 fa2)
-
+      getFa (Left parseError) = error "Parsing error"
+      getFa (Right fa) = fa
