@@ -15,9 +15,9 @@ The library also provides one operation implemented using the [antichain-based a
 * Universality testing (function `isUniversal`).
 
 ## Experimenting with the library
-This library uses [Stack](https://docs.haskellstack.org) as a development tool. It is necessary to install Stack in order to build the library. Stack docs contain the [installation instructions](https://docs.haskellstack.org/en/stable/README/#how-to-install).
+This library uses [Stack](https://docs.haskellstack.org) as a development tool. It is necessary to install Stack in order to build the library. Stack docs contain the [installation instructions](https://docs.haskellstack.org/en/stable/README/#how-to-install). After the installation of Stack, it is necessary to install the gtk2hs library by executing `stack install gtk2hs-buildtools`.
 
-After the installation of Stack, you can start the REPL by executing `stack ghci` in the root of the library. It will download all required dependencies and start GHCi with all library modules loaded. You can use the function `unsafeLoadFa :: FilePath -> Fa Symbol State` located in the module `Testing` to load an FA from a [Timbuk format](http://www.fit.vutbr.cz/research/groups/verifit/tools/libvata/#input) file. The following example shows how to load two FAs from files `{0, 1}.txt` and, after that, how to execute a binary operation on them in GHCi:
+After the necessary setup, you can start the REPL by executing `stack ghci` in the root of the library. It will download all required dependencies and start GHCi with all library modules loaded. You can use the function `unsafeLoadFa :: FilePath -> Fa Symbol State` located in the module `Testing` to load an FA from a [Timbuk format](http://www.fit.vutbr.cz/research/groups/verifit/tools/libvata/#input) file. The following example shows how to load two FAs from files `{0, 1}.txt` and, after that, how to execute a binary operation on them in GHCi:
 
 ```
 > let fstFa = unsafeLoadFa "tests/Examples/0.txt"
