@@ -24,12 +24,16 @@ library
                      , Parsing.Helpers
                      , Types.Fta
                      , Types.Fa
+                     , Visualization
   build-depends:       base >= 4.7 && < 5
                      , parsec
                      , containers
                      , parsec3-numbers
                      , bytestring
                      , mtl
+                     , gtk
+                     , directory
+                     , process
   default-language:    Haskell2010
 
 executable automata-exe
