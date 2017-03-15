@@ -25,4 +25,8 @@ After the installation of Stack, you can start the REPL by executing `stack ghci
 > fstFa `intersect` sndFa
 ```
 
-The resulting FA of the intersection operation will be printed in the GHCi terminal in the Timbuk format.
+The resulting FA of the intersection operation will be printed in the GHCi terminal in the Timbuk format. It is also possible to display the resulting FA graphically using the function `displayFa :: Fa sym sta -> IO ()` located in the module `Visualization`:
+
+```
+> displayFa (fstFa `intersect` sndFa)
+```
