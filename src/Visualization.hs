@@ -27,10 +27,13 @@ saveDotToImageFile dotFilePath imageFilePath dotContent = do
   callProcess "dot" ["-Tpng", dotFilePath, "-o", imageFilePath]
 
 faToDot :: (Show sym, Show sta) => Fa sym sta -> String
-faToDot (Fa _ _ transitions) =
-  "digraph something {" ++ faTransitionsToDot transitions ++ "}"
+faToDot (Fa _ finalStates transitions) =
+  "digraph something {{" ++ finalStatesToDot finalStates ++ "}" ++ transitionsToDot transitions ++ "}"
     where
-      faTransitionsToDot =
+      finalStatesToDot =
+        concatMap (\state -> showInQuotes state ++ " [ shape=doublecircle ];")
+
+      transitionsToDot =
         concatMap mapper
 
       mapper (Transition symbol state finalState) =
