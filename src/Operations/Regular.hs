@@ -3,6 +3,7 @@ module Operations.Regular
   , isMacrostateAccepting
   , run
   , post
+  , postForEachSymbol
   , union
   , intersect
   , determinize
@@ -40,6 +41,10 @@ post fa currentStates symbol =
     where
       isApplicableTransition (Transition tSymbol state _) =
         tSymbol == symbol && state `elem` currentStates
+
+postForEachSymbol :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> [[sta]]
+postForEachSymbol fa state =
+  fmap (post fa state) (symbols fa)
 
 union :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym sta -> Fa sym sta
 union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
@@ -113,10 +118,7 @@ hasTerminatingPath fa =
 
 newStates :: (Eq sym, Ord sta) => Fa sym sta -> Set sta -> Set sta
 newStates fa =
-  fromList . nub . concatMap (concat . post' fa . (: []))
-
-post' :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> [[sta]]
-post' fa state = fmap (($ state) . flip (post fa)) (symbols fa)
+  fromList . nub . concatMap (concat . postForEachSymbol fa . (: []))
 
 isSubsetOf :: (Eq sym, Ord sta) => Fa sym sta -> Fa sym sta -> Bool
 isSubsetOf fa1 fa2 =
