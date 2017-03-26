@@ -11,7 +11,6 @@ import qualified Data.Set as Set
 import Types.Fta as Fta
 import Types.Fa as Fa
 import Parsing.Fta (parseFta)
-import Helpers (findSingle, findSingleInSet)
 
 loadFta :: (Monad m) => FilePath -> IO (m Fta)
 loadFta filePath =
