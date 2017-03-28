@@ -20,12 +20,11 @@ parseFta fileContent =
 
 file :: Parser Fta
 file = do
-  { string "Ops "
-  ; symbolList <- symbolList
-  ; skipMany1 endOfLine
-  ; (states, finalStates, transitions) <- automaton
-  ; returnFta states finalStates transitions symbolList
-  }
+  string "Ops "
+  symbolList <- symbolList
+  skipMany1 endOfLine
+  (states, finalStates, transitions) <- automaton
+  returnFta states finalStates transitions symbolList
 
 returnFta :: Set State -> Set State -> Set Transition -> RankedAlphabet -> Parser Fta
 returnFta states finalStates transitions rankedAlphabet =
@@ -39,28 +38,26 @@ symbolList =
 
 symbolDecl :: Parser (Symbol, Rank)
 symbolDecl = do
-  { symbol <- Parsing.Fta.symbol
-  ; char ':'
-  ; rank <- decimal
-  ; return (symbol, rank)
-  }
-
+  symbol <- Parsing.Fta.symbol
+  char ':'
+  rank <- decimal
+  return (symbol, rank)
+  
 automaton :: Parser (Set String, Set String, Set Transition)
 automaton = do
-  { string "Automaton "
-  ; many1 alphaNum
-  ; skipSpacesAndEol
-  ; string "States "
-  ; states <- stateList
-  ; skipSpacesAndEol
-  ; string "Final States "
-  ; finalStates <- stateList
-  ; skipSpacesAndEol
-  ; string "Transitions"
-  ; endOfLine
-  ; transitions <- transitionList
-  ; return (states, finalStates, transitions)
-  }
+  string "Automaton "
+  many1 alphaNum
+  skipSpacesAndEol
+  string "States "
+  states <- stateList
+  skipSpacesAndEol
+  string "Final States "
+  finalStates <- stateList
+  skipSpacesAndEol
+  string "Transitions"
+  endOfLine
+  transitions <- transitionList
+  return (states, finalStates, transitions)
 
 stateList :: Parser (Set String)
 stateList =
@@ -76,12 +73,11 @@ transitionList =
 
 transition :: Parser Transition
 transition = do
-  { symbol <- Parsing.Fta.symbol
-  ; inputStates <- transitionStateList
-  ; string " -> "
-  ; finalState <- state
-  ; return (Types.Fta.Transition symbol inputStates finalState)
-  }
+  symbol <- Parsing.Fta.symbol
+  inputStates <- transitionStateList
+  string " -> "
+  finalState <- state
+  return (Types.Fta.Transition symbol inputStates finalState)
 
 transitionStateList :: Parser (Set String)
 transitionStateList =
@@ -97,10 +93,8 @@ sepEndByToSet value separator =
 
 skipSpacesAndEol :: Parser ()
 skipSpacesAndEol = do
-  { skipMany (char ' ')
-  ; endOfLine; return ()
-  }
+  skipMany (char ' ')
+  endOfLine; return ()
 
 brackets =
   between (char '(') (char ')')
-
