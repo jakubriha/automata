@@ -1,19 +1,19 @@
 module Helpers
-  ( findSingle
-  , findSingleInSet
+  ( isSubsetOf
+  , none
+  , remove
   ) where
 
-import Data.Set as Set
+import Data.List (intersect)
 
-findSingle :: (a -> Bool) -> [a] -> Maybe a
-findSingle predicate list =
-  case Prelude.filter predicate list of
-    [x] -> Just x
-    _   -> Nothing
+isSubsetOf :: Eq a => [a] -> [a] -> Bool
+isSubsetOf first second =
+  first `intersect` second == first
 
-findSingleInSet :: (a -> Bool) -> Set a -> Maybe a
-findSingleInSet predicate list =
-  case Set.toList $ Set.filter predicate list of
-    [x] -> Just x
-    _   -> Nothing
+none :: Foldable t => (a -> Bool) -> t a -> Bool
+none predicate =
+  not . any predicate
 
+remove :: (a -> Bool) -> [a] -> [a]
+remove predicate =
+  filter (not. predicate)

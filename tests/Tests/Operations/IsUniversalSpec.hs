@@ -7,7 +7,7 @@ import Test.QuickCheck
 
 import Tests.Common (assertFa)
 import Operations.Regular (charsToSymbols, isUniversal)
-import qualified Operations.Antichain as Antichain
+import qualified Operations.Antichain.Universality as Antichain (isUniversal)
 
 spec :: Spec
 spec =
@@ -27,4 +27,3 @@ spec =
 
     it "0.txt is not universal using antichain algorithm" $
       assertFa "0.txt" (not . Antichain.isUniversal)
-

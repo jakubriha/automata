@@ -1,23 +1,16 @@
-module Operations.Antichain
+module Operations.Antichain.Universality
   ( isUniversal
-  , while
   ) where
 
 import Types.Fa (Fa, initialStates, symbols)
-import Operations.Regular (isMacrostateAccepting, post)
-import Data.List (union, intersect, foldl', (\\))
+import Operations.Regular (isMacrostateAccepting, postForEachSymbol)
+import qualified Helpers (isSubsetOf)
+import Data.List (union, foldl', (\\))
 import Control.Monad.State
-
-isSubsetOf :: Eq a => [a] -> [a] -> Bool
-isSubsetOf first second =
-  first `intersect` second == first
 
 isLowerOrEqual :: Eq sta => [sta] -> [sta] -> Bool
 isLowerOrEqual =
-  isSubsetOf
-
-post' :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> [[sta]]
-post' fa state = fmap (($ state) . flip (post fa)) (symbols fa)
+  Helpers.isSubsetOf
 
 type InnerState sta = ([[sta]], [[sta]])
 type Post sta = [sta] -> [[sta]]
@@ -28,7 +21,7 @@ isUniversal fa =
   isMacrostateAccepting fa (initialStates fa) && while'
     where
       while' =
-        evalState (while (post' fa) (not . isMacrostateAccepting fa)) ([], [initialStates fa])
+        evalState (while (postForEachSymbol fa) (not . isMacrostateAccepting fa)) ([], [initialStates fa])
 
 moveRFromNextToProcessed :: State (InnerState sta) [sta]
 moveRFromNextToProcessed = state $ \(processed, r : next') ->
