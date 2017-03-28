@@ -10,8 +10,9 @@ Implementation of an efficient functional library for finite automata (FA). This
 * Inclusion testing (function `isSubsetOf`),
 * Universality testing (function `isUniversal`).
 
-The library also provides one operation implemented using the [antichain-based approach](http://link.springer.com/chapter/10.1007/978-3-642-12002-2_14). The operation is located in the module `Operations.Antichain`:
+The library also provides two operations implemented using the [antichain-based approach](http://link.springer.com/chapter/10.1007/978-3-642-12002-2_14). These operations are located in the module `Operations.Antichain`:
 
+* Inclusion testing (function `isSubsetOf`),
 * Universality testing (function `isUniversal`).
 
 ## Experimenting with the library
