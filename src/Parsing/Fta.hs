@@ -3,6 +3,7 @@ module Parsing.Fta
   ) where
 
 import Data.ByteString (ByteString)
+import Data.Maybe (isJust)
 import Text.Parsec hiding (State)
 import Text.Parsec.ByteString
 import Data.Set (Set, fromList, empty)
@@ -20,7 +21,8 @@ parseFta fileContent =
 
 file :: Parser Fta
 file = do
-  string "Ops "
+  string "Ops"
+  skipSpacesAndNewlines
   symbolList <- symbolList
   skipMany1 endOfLine
   (states, finalStates, transitions) <- automaton
@@ -34,12 +36,14 @@ returnFta states finalStates transitions rankedAlphabet =
 
 symbolList :: Parser RankedAlphabet
 symbolList =
-  sepEndByToSet symbolDecl (char ' ')
+  sepEndByToSet symbolDecl (oneOf " \n")
 
 symbolDecl :: Parser (Symbol, Rank)
 symbolDecl = do
   symbol <- Parsing.Fta.symbol
+  spaces
   char ':'
+  skipMany space
   rank <- decimal
   return (symbol, rank)
   
@@ -47,21 +51,27 @@ automaton :: Parser (Set String, Set String, Set Transition)
 automaton = do
   string "Automaton "
   many1 alphaNum
-  skipSpacesAndEol
-  string "States "
+  skipSpacesAndNewlines
+  
+  string "States"
   states <- stateList
-  skipSpacesAndEol
-  string "Final States "
+  skipSpacesAndNewlines
+
+  string "Final States"
   finalStates <- stateList
-  skipSpacesAndEol
+  skipSpacesAndNewlines
+  
   string "Transitions"
-  endOfLine
+  skipSpacesAndNewlines
   transitions <- transitionList
   return (states, finalStates, transitions)
 
 stateList :: Parser (Set String)
-stateList =
-  sepEndByToSet state (char ' ')
+stateList = do
+  isSpace <- optionMaybe (char ' ')
+  if isJust isSpace
+    then sepEndByToSet state (char ' ')
+    else endOfLine >> sepEndByToSet state endOfLine
 
 state :: Parser String
 state =
@@ -91,10 +101,9 @@ sepEndByToSet :: (Ord a, Stream s m t) => ParsecT s u m a -> ParsecT s u m sep -
 sepEndByToSet value separator =
   fmap fromList (value `sepEndBy` separator)
 
-skipSpacesAndEol :: Parser ()
-skipSpacesAndEol = do
-  skipMany (char ' ')
-  endOfLine; return ()
+skipSpacesAndNewlines :: Parser ()
+skipSpacesAndNewlines =
+  skipMany (oneOf " \n")
 
 brackets =
   between (char '(') (char ')')
