@@ -11,12 +11,11 @@ import Text.Parsec.Char
 import Text.Parsec.Number
 
 import Types.Fta
-import Parsing.Helpers (parseErrorToString)
 
 parseFta :: (Monad m) => ByteString -> m Fta
 parseFta fileContent =
   case runParser file () "" fileContent of
-    Left error -> fail (parseErrorToString error)
+    Left error -> fail $ show error
     Right fta -> return fta
 
 file :: Parser Fta

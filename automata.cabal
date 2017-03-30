@@ -22,7 +22,6 @@ library
                      , Helpers
                      , Parsing.General
                      , Parsing.Fta
-                     , Parsing.Helpers
                      , Types.Fta
                      , Types.Fa
                      , Visualization
