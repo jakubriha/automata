@@ -53,21 +53,29 @@ union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStat
     (finalStates1 `List.union` finalStates2)
     (transitions1 `List.union` transitions2)
 
+transitionsCreator
+  :: (Eq sym1, Eq sym2)
+  => (sym1 -> sym2 -> sym)
+  -> (sym1 -> sym2 -> Bool)
+  -> Fa sym1 sta1
+  -> Fa sym2 sta2
+  -> [Transition sym (sta1, sta2)]
+transitionsCreator function predicate fa1 fa2 =
+  [ Transition (function symbol1 symbol2) (state1, state2) (final1, final2)
+  | symbol1 <- symbols fa1
+  , symbol2 <- symbols fa2
+  , predicate symbol1 symbol2
+  , (Transition symbol1k state1 final1) <- transitions fa1
+  , (Transition symbol2k state2 final2) <- transitions fa2
+  , symbol1k == symbol1 && symbol2k == symbol2
+  ]
+
 intersect :: Eq sym => Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
-intersect fa1@(Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
-  let
-    transitionsPerSymbol symbol =
-      [ Transition symbol (state1, state2) (final1, final2)
-      | (Transition symbol1 state1 final1) <- transitions1
-      , (Transition symbol2 state2 final2) <- transitions2
-      , symbol1 == symbol && symbol2 == symbol
-      ]
-    transitions = concatMap transitionsPerSymbol (symbols fa1)
-  in
-    Fa
-      [(state1, state2) | state1 <- initialStates1, state2 <- initialStates2]
-      [(state1, state2) | state1 <- finalStates1, state2 <- finalStates2]
-      transitions
+intersect fa1 fa2 =
+  Fa
+    [(state1, state2) | state1 <- initialStates fa1, state2 <- initialStates fa2]
+    [(state1, state2) | state1 <- finalStates fa1, state2 <- finalStates fa2]
+    (transitionsCreator const (==) fa1 fa2)
 
 determinize' :: (Eq sym, Eq sta) => [sta] -> [Transition sym [sta]] -> Fa sym sta -> [Transition sym [sta]]
 determinize' current transitions fa =
