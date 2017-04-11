@@ -35,6 +35,7 @@ library
                      , gtk
                      , directory
                      , process
+                     , monad-loops
   default-language:    Haskell2010
 
 executable automata-exe

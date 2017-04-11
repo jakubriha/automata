@@ -2,7 +2,6 @@ module Operations.WithExternalSymbols
   ( postForEachSymbol
   , transitionsCreator
   , intersect
-  , determinize'
   , determinize
   , complement
   , isEmpty
@@ -10,11 +9,13 @@ module Operations.WithExternalSymbols
   , isUniversal
   ) where
 
-import Types.Fa hiding (symbols)
+import Types.Fa hiding (State, state, symbols)
 import qualified Data.List as List
 import qualified Data.Set as Set
 import Data.Set (Set, empty, toList, fromList, unions, intersection)
 import Data.List ((\\), nub)
+import Control.Monad.State
+import Control.Monad.Loops (whileM_)
 
 charsToSymbols :: String -> [Symbol]
 charsToSymbols = fmap (: [])
@@ -76,27 +77,43 @@ intersect fa1Symbols fa2Symbols fa1 fa2 =
     [(state1, state2) | state1 <- finalStates fa1, state2 <- finalStates fa2]
     (transitionsCreator fa1Symbols fa2Symbols const (==) fa1 fa2)
 
-determinize' :: (Eq sym, Eq sta) => [sym] -> [sta] -> [Transition sym [sta]] -> Fa sym sta -> [Transition sym [sta]]
-determinize' symbols current transitions fa =
+type Front sta = [[sta]]
+type NewStates sta = [[sta]]
+type NewTransitions sym sta = [Transition sym [sta]]
+type InnerState sym sta = (Front sta, NewStates sta, NewTransitions sym sta)
+
+frontNotEmpty :: State (InnerState sym sta) Bool
+frontNotEmpty = state $ \oldState@(front, _, _) ->
+  (not $ null front, oldState)
+
+moveRFromFrontToNewStates :: State (InnerState sym sta) [sta]
+moveRFromFrontToNewStates = state $ \(r : front', newStates, newTransitions) ->
+  (r, (front', r : newStates, newTransitions))
+
+addStateAndTransitionsOfR :: (Eq sym, Eq sta) => Fa sym sta -> [sym] -> [sta] -> State (InnerState sym sta) ()
+addStateAndTransitionsOfR fa symbols r = state $ \(front, oldStates, oldTransitions) ->
   let
-    postState = post fa current
-    transition symbol = Transition symbol current (postState symbol)
-    toReturn symbol =
-      if transition symbol `elem` transitions
-        then []
-        else transition symbol : determinize' symbols (postState symbol) (transition symbol : transitions) fa
+    r' = fmap (post fa r) symbols
+    newTransitions = fmap (\(symbol, newR) -> Transition symbol r newR) (zip symbols r')
+    newFront = nub $ concatMap (\r -> if r `notElem` oldStates then [r] `List.union` front else front) r'
   in
-    nub $ concatMap toReturn symbols
+    ((), (newFront, oldStates, newTransitions ++ oldTransitions))
+
+whileBody :: (Eq sym, Eq sta) => Fa sym sta -> [sym] -> State (InnerState sym sta) ()
+whileBody fa symbols =
+  moveRFromFrontToNewStates >>= addStateAndTransitionsOfR fa symbols
+
+while :: (Eq sym, Eq sta) => Fa sym sta -> [sym] -> State (InnerState sym sta) (Fa sym [sta])
+while fa symbols = do
+  whileM_ frontNotEmpty (whileBody fa symbols)
+  (_, newStates, newTransitions) <- get
+  return $ Fa [initialStates fa] (newFinalStates newStates) newTransitions
+    where
+      newFinalStates = filter (not . null . (`List.intersect` finalStates fa))
 
 determinize :: (Eq sym, Eq sta) => [sym] -> Fa sym sta -> Fa sym [sta]
 determinize symbols fa =
-  let
-    transitions = determinize' symbols (initialStates fa) [] fa
-    mapper (Transition _ state final) = [state, final]
-    finalStatesFromInitialStates = [initialStates fa | isMacrostateAccepting fa (initialStates fa)]
-    finalStates = (nub . filter (isMacrostateAccepting fa) . concatMap mapper) transitions
-  in
-    Fa [initialStates fa] (finalStatesFromInitialStates ++ finalStates) transitions
+  evalState (while fa symbols) ([initialStates fa], [], []) 
 
 complement :: (Eq sym, Eq sta) => [sym] -> Fa sym sta -> Fa sym [sta]
 complement symbols =
@@ -116,7 +133,7 @@ hasTerminatingPath symbols fa =
       hasTerminatingPath' processed next
         | null next = False
         | not $ null $ next `intersection` fromList (finalStates fa) = True
-        | otherwise = 
+        | otherwise =
           let
             processed' = processed `Set.union` next
             next' = newStates symbols fa next Set.\\ processed'
