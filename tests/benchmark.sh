@@ -9,28 +9,37 @@ else
   exit 1
 fi
 
-directory="/home/jakub/Sources/automata-benchmarks"
-faCount=$2
+directory="/home/jakub/Desktop/fas"
+csv="/home/jakub/Sources/thesis/data/incl-automata.csv"
 
-tempFile="$(mktemp)"
+echo "x,y,z" > $csv
 
-# Get *.tmb filepaths that will be used in benchmark and save them to $temFile.
-find "$directory" -name "*.tmb" | head -"$faCount" > "$tempFile"
+files=$(find $directory -type f | sort)
 
-# Convert $tempFile content to array.
-IFS=$'\r\n' GLOBIGNORE='*' command eval  'filepaths=($(cat "$tempFile"))'
+for file1 in $files
+do
+  for file2 in $files
+  do
+    # Execute program and save stderr to time.
+    $program $file1 $file2 >> /tmp/results-automata 2> /tmp/error
+    time=$(</tmp/error)
 
-> "$tempFile"
+    # Get rid of scientific notation
+    time=`echo ${time} | sed -e 's/[eE]+*/\\*10\\^/'`
 
-# For each pair of filepaths...
-for i in "${!filepaths[@]}"; do 
-  for j in "${!filepaths[@]}"; do 
+    # Time in seconds convert to miliseconds
+    time=$(echo "1000 * $time" | bc -l)
 
-    # Execute program and pipe stderr to $tempFile.
-    $program ${filepaths[$i]} ${filepaths[$j]} 2>>"$tempFile" >/dev/null
+    states1=$(basename "$file1")
+    states1="${states1%.*}"
 
+    states2=$(basename "$file2")
+    states2="${states2%.*}"
+
+    printf "%s,%s,%s\n" "$states1" "$states2" "$time" >> $csv
+  
   done
-done
 
-# Get average of values in $tempFile.
-awk '{ total += $1 } END { print total/NR }' "$tempFile"
+  echo "" >> $csv
+
+done
