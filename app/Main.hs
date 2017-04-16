@@ -3,7 +3,7 @@ module Main where
 import Parsing.General (parseFa)
 import Types.Fa (Fa)
 import qualified Data.ByteString as B
-import Operations.Antichain.Inclusion (isSubsetOf)
+import Operations.Regular (union)
 import System.Environment (getArgs)
 import Control.DeepSeq
 import Control.Exception (evaluate)
@@ -53,6 +53,6 @@ benchmarkForce action param1 param2 = do
 
   return result
           
-performOperation :: (Eq sym, Ord sta) => Fa sym sta -> Fa sym sta -> Bool
+performOperation :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym sta -> Fa sym sta
 performOperation =
-  isSubsetOf
+  union
