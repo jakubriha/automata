@@ -1,3 +1,5 @@
+{-# LANGUAGE DeriveGeneric, DeriveAnyClass #-}
+
 module Types.Fa
   ( Symbol
   , State
@@ -8,6 +10,8 @@ module Types.Fa
   ) where
 
 import Data.List (nub, intersperse, intercalate)
+import Control.DeepSeq (NFData)
+import GHC.Generics (Generic)
 
 type Symbol =
   String
@@ -20,14 +24,14 @@ data Transition sym sta =
     { symbol :: sym
     , state :: sta
     , finalState :: sta
-    } deriving (Eq, Ord)
+    } deriving (Eq, Ord, NFData, Generic)
 
 data Fa sym sta =
   Fa
     { initialStates :: [sta]
     , finalStates :: [sta]
     , transitions :: [Transition sym sta]
-    }
+    } deriving (NFData, Generic)
 
 instance Functor (Fa sym) where
   fmap f fa =

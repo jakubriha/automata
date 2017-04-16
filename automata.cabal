@@ -36,6 +36,7 @@ library
                      , directory
                      , process
                      , monad-loops
+                     , deepseq
   default-language:    Haskell2010
 
 executable automata-exe
@@ -45,6 +46,9 @@ executable automata-exe
   build-depends:       base
                      , automata
                      , parsec
+                     , bytestring
+                     , time
+                     , deepseq
   default-language:    Haskell2010
 
 test-suite automata-test

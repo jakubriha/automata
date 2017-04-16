@@ -1,6 +1,7 @@
 module Parsing.General
   ( loadFta
   , loadFa
+  , parseFa
   ) where
 
 import Data.ByteString (ByteString)
