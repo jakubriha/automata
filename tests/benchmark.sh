@@ -10,7 +10,7 @@ else
 fi
 
 directory="/home/jakub/Desktop/fas"
-csv="/home/jakub/Sources/thesis/data/union-automata.csv"
+csv="/home/jakub/Sources/thesis/data/incl-automata.csv"
 
 echo "x,y,z" > $csv
 

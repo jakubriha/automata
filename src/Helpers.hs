@@ -4,16 +4,17 @@ module Helpers
   , remove
   ) where
 
-import Data.List (intersect)
+import Data.Set.Monad (Set)
+import qualified Data.Set.Monad as Set
 
-isSubsetOf :: Eq a => [a] -> [a] -> Bool
+isSubsetOf :: Ord a => Set a -> Set a -> Bool
 isSubsetOf first second =
-  first `intersect` second == first
+  first `Set.intersection` second == first
 
 none :: Foldable t => (a -> Bool) -> t a -> Bool
 none predicate =
   not . any predicate
 
-remove :: (a -> Bool) -> [a] -> [a]
+remove :: Ord a => (a -> Bool) -> Set a -> Set a
 remove predicate =
-  filter (not. predicate)
+  Set.filter (not. predicate)

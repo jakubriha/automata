@@ -8,7 +8,8 @@ module Types.Fta
   , makeFta
   ) where
 
-import Data.Set (Set, isSubsetOf)
+import Data.Set.Monad (Set)
+import qualified Data.Set.Monad as Set
 
 type Symbol =
   State
@@ -43,7 +44,7 @@ data Fta =
 
 makeFta :: Set State -> Set State -> Set Transition -> RankedAlphabet -> Maybe Fta
 makeFta states finalStates transitions rankedAlphabet =
-  if and [finalStates `isSubsetOf` states]
+  if and [finalStates `Set.isSubsetOf` states]
      then Just (Fta states finalStates transitions rankedAlphabet)
      else Nothing
 

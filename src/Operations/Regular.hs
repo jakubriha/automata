@@ -1,11 +1,22 @@
 module Operations.Regular
-  ( union
+  ( isMacrostateAccepting
+  , postForEachSymbol
+  , union
   ) where
 
 import Types.Fa
-import qualified Data.Set as Set
-import Data.Set (Set, empty, toList, fromList, unions, intersection)
+import Data.Set.Monad (Set)
+import qualified Data.Set.Monad as Set
 import Data.List ((\\), nub)
+import qualified Operations.WithExternalSymbols as ExternalSymbols
+
+isMacrostateAccepting :: Ord sta => Fa sym sta -> Set sta -> Bool 
+isMacrostateAccepting fa states = 
+  states `Set.intersection` finalStates fa /= Set.empty
+
+postForEachSymbol :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> Set (Set sta)
+postForEachSymbol fa = 
+  ExternalSymbols.postForEachSymbol (symbols fa) fa
 
 union :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym sta -> Fa sym sta
 union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =

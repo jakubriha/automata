@@ -16,6 +16,8 @@ cabal-version:       >=1.10
 library
   hs-source-dirs:      src
   exposed-modules:     Operations.Regular
+                     , Operations.WithExternalSymbols
+                     , Operations.Antichain.Inclusion
                      , Testing
                      , Helpers
                      , Parsing.General
@@ -34,6 +36,7 @@ library
                      , process
                      , monad-loops
                      , deepseq
+                     , set-monad
   default-language:    Haskell2010
 
 executable automata-exe
