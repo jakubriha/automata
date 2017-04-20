@@ -1,12 +1,19 @@
+{-# LANGUAGE MonadComprehensions #-}
+
 module Operations.WithExternalSymbols
   ( postForEachSymbol
+  , transitionsCreator
+  , intersect
+  , determinize
+  , complement
+  , isEmpty
+  , isSubsetOf
+  , isUniversal
   ) where
 
 import Types.Fa hiding (State, state, symbols)
-import qualified Data.List as List
 import Data.Set.Monad (Set)
 import qualified Data.Set.Monad as Set
-import Data.List ((\\), nub)
 import Control.Monad.State
 import Control.Monad.Loops (whileM_)
 
@@ -27,3 +34,114 @@ post fa currentStates symbol =
 postForEachSymbol :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Set sta -> Set (Set sta)
 postForEachSymbol symbols fa state =
   fmap (post fa state) symbols
+
+transitionsCreator
+  :: (Ord sym1, Ord sym2)
+  => Set sym1
+  -> Set sym2
+  -> (sym1 -> sym2 -> sym)
+  -> (sym1 -> sym2 -> Bool)
+  -> Fa sym1 sta1
+  -> Fa sym2 sta2
+  -> Set (Transition sym (sta1, sta2))
+transitionsCreator symbols1 symbols2 function predicate fa1 fa2 =
+  [ Transition (function symbol1 symbol2) (state1, state2) (final1, final2)
+  | symbol1 <- symbols1
+  , symbol2 <- symbols2
+  , predicate symbol1 symbol2
+  , (Transition symbol1k state1 final1) <- transitions fa1
+  , (Transition symbol2k state2 final2) <- transitions fa2
+  , symbol1k == symbol1 && symbol2k == symbol2
+  ]
+
+intersect :: Ord sym => Set sym -> Set sym -> Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
+intersect fa1Symbols fa2Symbols fa1 fa2 =
+  Fa
+    [(state1, state2) | state1 <- initialStates fa1, state2 <- initialStates fa2]
+    [(state1, state2) | state1 <- finalStates fa1, state2 <- finalStates fa2]
+    (transitionsCreator fa1Symbols fa2Symbols const (==) fa1 fa2)
+
+type Front sta = Set (Set sta)
+type NewStates sta = Set (Set sta)
+type NewTransitions sym sta = Set (Transition sym (Set sta))
+type InnerState sym sta = (Front sta, NewStates sta, NewTransitions sym sta)
+
+frontNotEmpty :: State (InnerState sym sta) Bool
+frontNotEmpty = state $ \oldState@(front, _, _) ->
+  (not $ null front, oldState)
+
+moveRFromFrontToNewStates :: Ord sta => State (InnerState sym sta) (Set sta)
+moveRFromFrontToNewStates = state $ \(front, newStates, newTransitions) ->
+  let
+    r = Set.findMin front
+    front' = Set.delete r front
+    newStates' = Set.insert r newStates
+  in
+    (r, (front', newStates', newTransitions))
+
+addStateAndTransitionsOfR :: (Ord sym, Ord sta) => Fa sym sta -> Set sym -> Set sta -> State (InnerState sym sta) ()
+addStateAndTransitionsOfR fa symbols r = state $ \(oldFront, oldStates, oldTransitions) ->
+  let
+    rWithSymbol = fmap (\symbol -> (post fa r symbol, symbol)) symbols
+    r' = fmap fst rWithSymbol
+    newTransitions = oldTransitions `Set.union` [Transition symbol r newR | (newR, symbol) <- rWithSymbol]
+    newFront = oldFront `Set.union` [newR | newR <- r', newR `Set.notMember` oldStates]
+  in
+    ((), (newFront, oldStates, newTransitions))
+
+whileBody :: (Ord sym, Ord sta) => Fa sym sta -> Set sym -> State (InnerState sym sta) ()
+whileBody fa symbols =
+  moveRFromFrontToNewStates >>= addStateAndTransitionsOfR fa symbols
+
+while :: (Ord sym, Ord sta) => Fa sym sta -> Set sym -> State (InnerState sym sta) (Fa sym (Set sta))
+while fa@(Fa initialStates finalStates _) symbols = do
+  whileM_ frontNotEmpty (whileBody fa symbols)
+  (_, newStates, newTransitions) <- get
+  return $ Fa (Set.singleton initialStates) (newFinalStates newStates) newTransitions
+    where
+      newFinalStates = Set.filter $ not . Set.null . (`Set.intersection` finalStates)
+
+determinize :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
+determinize symbols fa =
+  evalState (while fa symbols) (Set.singleton (initialStates fa), Set.empty, Set.empty)
+
+complement :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
+complement symbols =
+  updateFinalStates . determinize symbols
+    where
+      updateFinalStates fa@(Fa initialStates finalStates transitions) =
+        Fa initialStates (states fa Set.\\ finalStates) transitions
+
+isEmpty :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Bool
+isEmpty symbols =
+  not . hasTerminatingPath symbols
+
+hasTerminatingPath :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Bool
+hasTerminatingPath symbols fa =
+  not (null $ finalStates fa) && hasTerminatingPath' Set.empty (initialStates fa)
+    where
+      hasTerminatingPath' processed next
+        | null next = False
+        | not $ null $ next `Set.intersection` finalStates fa = True
+        | otherwise =
+          let
+            processed' = processed `Set.union` next
+            next' = newStates symbols fa next Set.\\ processed'
+          in
+            hasTerminatingPath' processed' next'
+
+newStates :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Set sta -> Set sta
+newStates symbols fa states =
+  Set.unions $ Set.toList $ postForEachSymbol symbols fa states
+
+isSubsetOf :: (Ord sym, Ord sta) => Set sym -> Set sym -> Fa sym sta -> Fa sym sta -> Bool
+isSubsetOf fa1Symbols fa2Symbols fa1 fa2 =
+  isEmpty (fa1Symbols `Set.union` fa2Symbols) (intersect fa1Symbols fa2Symbols fa1 (complement fa2Symbols fa2))
+
+isUniversal :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Bool
+isUniversal symbols fa =
+  not (null $ states fa) && isSubsetOf symbols symbols universalFA fa
+    where
+      state = Set.findMin $ states fa
+      transitions = fmap (\symbol -> Transition symbol state state) symbols
+      universalFA = Fa (Set.singleton state) (Set.singleton state) transitions
