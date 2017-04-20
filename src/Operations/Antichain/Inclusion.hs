@@ -9,9 +9,8 @@ import Types.Fa (Fa(..), symbols, Transition, finalState)
 import qualified Types.Fa as Fa (Transition(..)) 
 import Data.Set.Monad (Set)
 import qualified Data.Set.Monad as Set
-import Operations.Regular (isMacrostateAccepting, postForEachSymbol)
+import Operations.Regular (isMacrostateAccepting)
 import qualified Helpers (isSubsetOf, none, remove)
-import Data.List (union)
 import Control.Monad.State
 
 isLowerOrEqual :: Ord sta => Set sta -> Set sta -> Bool
@@ -49,7 +48,7 @@ moveRFromNextToProcessed :: Ord sta => State (InnerState sta) (ProductState sta)
 moveRFromNextToProcessed = state $ \(processed, next) ->
   let
     r = Set.findMin next
-    processed' = processed `Set.union` Set.singleton r
+    processed' = Set.insert r processed
     next' = Set.delete r next
   in
     (r, (processed', next'))
