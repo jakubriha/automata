@@ -1,4 +1,4 @@
-{-# LANGUAGE MonadComprehensions #-}
+{-# LANGUAGE MonadComprehensions, BangPatterns #-}
 
 module Operations.Antichain.Inclusion
   ( isSubsetOf
@@ -18,7 +18,7 @@ isLowerOrEqual =
   Helpers.isSubsetOf
 
 post' :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym sta -> ProductState sta -> Set (ProductState sta)
-post' fa1 fa2 (p, p') =
+post' !fa1 !fa2 (!p, !p') =
   [ (r, [ finalState tran | tran <- transitions fa2, stat <- p', isApplicableTransition a stat tran])
   | a <- symbols fa1 `Set.union` symbols fa2
   , r <- (fmap finalState . Set.filter (isApplicableTransition a p)) (transitions fa1)
@@ -32,12 +32,12 @@ type InnerState sta = (Set (ProductState sta), Set (ProductState sta))
 type Post sta = ProductState sta -> Set (ProductState sta)
 type IsAccepting sta = ProductState sta -> Bool
 
-isAccepting :: (Ord sta, Eq sta) => Fa sym sta -> Fa sym sta -> ProductState sta -> Bool
-isAccepting (Fa _ finalStates1 _) fa2 (p, r) =
+isAccepting :: (Ord sym, Ord sta, Eq sta) => Fa sym sta -> Fa sym sta -> ProductState sta -> Bool
+isAccepting (Fa _ !finalStates1 _) !fa2 !(p, r) =
   p `elem` finalStates1 && not (isMacrostateAccepting fa2 r)
 
 isSubsetOf :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym sta -> Bool
-isSubsetOf fa1 fa2 =
+isSubsetOf !fa1 !fa2 =
   not (any (isAccepting fa1 fa2) next) && while'
     where
       next = [(p, initialStates fa2) | p <- initialStates fa1]
@@ -45,7 +45,7 @@ isSubsetOf fa1 fa2 =
         evalState (while (post' fa1 fa2) (isAccepting fa1 fa2)) (Set.empty, next)
 
 moveRFromNextToProcessed :: Ord sta => State (InnerState sta) (ProductState sta)
-moveRFromNextToProcessed = state $ \(processed, next) ->
+moveRFromNextToProcessed = state $ \(!processed, !next) ->
   let
     r = Set.findMin next
     processed' = Set.insert r processed
@@ -54,7 +54,7 @@ moveRFromNextToProcessed = state $ \(processed, next) ->
     (r, (processed', next'))
 
 while :: (Ord sta, Eq sta) => Post sta -> IsAccepting sta -> State (InnerState sta) Bool
-while post isAccepting = do
+while !post !isAccepting = do
   (_, next) <- get
   if not $ null next
     then do
@@ -67,7 +67,7 @@ while post isAccepting = do
       return True
 
 processPostStates :: Ord sta => Set (ProductState sta) -> IsAccepting sta -> State (InnerState sta) Bool
-processPostStates ps isAccepting
+processPostStates !ps !isAccepting
   | ps == Set.empty = return False
   | otherwise =
     let
@@ -87,9 +87,9 @@ processPostStates ps isAccepting
               processPostStates ps' isAccepting
 
 removeFromStateAllGreaterThan :: Ord sta => ProductState sta -> State (InnerState sta) ()
-removeFromStateAllGreaterThan p = do
+removeFromStateAllGreaterThan !p = do
   (processed, next) <- get
-  state $ \(processed, next) ->
+  state $ \(!processed, !next) ->
     let
       predicate (s, s') = s == fst p && s' `isLowerOrEqual` snd p
       processed' = Helpers.remove predicate processed
@@ -99,5 +99,5 @@ removeFromStateAllGreaterThan p = do
 
 addToNext :: Ord sta => ProductState sta -> State (InnerState sta) ()
 addToNext p =
-  state $ \(processed, next) ->
+  state $ \(!processed, !next) ->
     ((), (processed, next `Set.union` Set.singleton p))

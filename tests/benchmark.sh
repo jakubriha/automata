@@ -37,6 +37,7 @@ do
     states2="${states2%.*}"
 
     printf "%s,%s,%s\n" "$states1" "$states2" "$time" >> $csv
+    printf "%s,%s,%s\n" "$states1" "$states2" "$time"
   
   done
 
