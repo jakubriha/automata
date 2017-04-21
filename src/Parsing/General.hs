@@ -7,7 +7,8 @@ module Parsing.General
 import Data.ByteString (ByteString)
 import qualified Data.ByteString as B
 
-import qualified Data.Set as Set
+import Data.Set.Monad (Set)
+import qualified Data.Set.Monad as Set
 
 import Types.Fta as Fta
 import Types.Fa as Fa
@@ -29,17 +30,17 @@ parseFa fileContent =
 
 ftaToFa :: Fta -> Fa Fa.Symbol Fa.State
 ftaToFa (Fta states finalStates transitions rankedAlphabet) =
-  Fa (extractInitialStates transitions) (Set.toList finalStates) (Set.toList faTransitions)
+  Fa (extractInitialStates transitions) finalStates faTransitions
     where
-      faTransitions = (Set.map ftaToFaTransition . Set.filter isNotInitialTransition) transitions
+      faTransitions = (fmap ftaToFaTransition . Set.filter isNotInitialTransition) transitions
 
 isNotInitialTransition :: Fta.Transition -> Bool
 isNotInitialTransition = not . Set.null . inputStates
 
 ftaToFaTransition :: Fta.Transition -> Fa.Transition Fa.Symbol Fa.State
 ftaToFaTransition (Fta.Transition symbol inputStates finalState) =
-  Fa.Transition symbol (Set.elemAt 0 inputStates) finalState
+  Fa.Transition symbol (head . Set.elems $ inputStates) finalState
 
-extractInitialStates :: Set.Set Fta.Transition -> [Fta.State]
+extractInitialStates :: Set.Set Fta.Transition -> Set Fta.State
 extractInitialStates =
-  fmap Fta.finalState . Set.toList . Set.filter (Set.null . inputStates)
+  fmap Fta.finalState . Set.filter (Set.null . inputStates)

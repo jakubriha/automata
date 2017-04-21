@@ -6,7 +6,8 @@ import Data.ByteString (ByteString)
 import Data.Maybe (isJust)
 import Text.Parsec hiding (State)
 import Text.Parsec.ByteString
-import Data.Set (Set, fromList, empty)
+import Data.Set.Monad (Set)
+import qualified Data.Set.Monad as Set
 import Text.Parsec.Char
 import Text.Parsec.Number
 
@@ -90,7 +91,7 @@ transition = do
 
 transitionStateList :: Parser (Set String)
 transitionStateList =
-  option empty (brackets (sepEndByToSet state (char ',')))
+  option Set.empty (brackets (sepEndByToSet state (char ',')))
 
 symbol :: Parser Symbol
 symbol =
@@ -98,7 +99,7 @@ symbol =
 
 sepEndByToSet :: (Ord a, Stream s m t) => ParsecT s u m a -> ParsecT s u m sep -> ParsecT s u m (Set a)
 sepEndByToSet value separator =
-  fmap fromList (value `sepEndBy` separator)
+  fmap Set.fromList (value `sepEndBy` separator)
 
 skipSpacesAndNewlines :: Parser ()
 skipSpacesAndNewlines =

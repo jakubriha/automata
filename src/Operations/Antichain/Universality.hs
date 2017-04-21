@@ -1,3 +1,5 @@
+{-# LANGUAGE MonadComprehensions #-}
+
 module Operations.Antichain.Universality
   ( isUniversal
   ) where
@@ -5,29 +7,36 @@ module Operations.Antichain.Universality
 import Types.Fa (Fa, initialStates, symbols)
 import Operations.Regular (isMacrostateAccepting, postForEachSymbol)
 import qualified Helpers (isSubsetOf)
-import Data.List (union, foldl', (\\))
+import Data.Set.Monad (Set)
+import qualified Data.Set.Monad as Set
 import Control.Monad.State
 
-isLowerOrEqual :: Eq sta => [sta] -> [sta] -> Bool
+isLowerOrEqual :: Ord sta => Set sta -> Set sta -> Bool
 isLowerOrEqual =
   Helpers.isSubsetOf
 
-type InnerState sta = ([[sta]], [[sta]])
-type Post sta = [sta] -> [[sta]]
-type IsRejecting sta = [sta] -> Bool
+type MacroState sta = Set sta
+type InnerState sta = (Set (MacroState sta), Set (MacroState sta))
+type Post sta = MacroState sta -> Set (MacroState sta)
+type IsRejecting sta = MacroState sta -> Bool
 
-isUniversal:: (Eq sym, Eq sta) => Fa sym sta -> Bool
+isUniversal:: (Ord sym, Ord sta) => Fa sym sta -> Bool
 isUniversal fa =
   isMacrostateAccepting fa (initialStates fa) && while'
     where
       while' =
-        evalState (while (postForEachSymbol fa) (not . isMacrostateAccepting fa)) ([], [initialStates fa])
+        evalState (while (postForEachSymbol fa) (not . isMacrostateAccepting fa)) (Set.empty, Set.singleton $ initialStates fa)
 
-moveRFromNextToProcessed :: State (InnerState sta) [sta]
-moveRFromNextToProcessed = state $ \(processed, r : next') ->
-  (r, (r : processed, next'))
+moveRFromNextToProcessed :: Ord sta => State (InnerState sta) (MacroState sta)
+moveRFromNextToProcessed = state $ \(processed, next) ->
+  let
+    r = Set.findMin next
+    processed' = Set.insert r processed
+    next' = Set.delete r next
+  in
+    (r, (processed', next'))
 
-while :: Eq sta => Post sta -> IsRejecting sta -> State (InnerState sta) Bool
+while :: Ord sta => Post sta -> IsRejecting sta -> State (InnerState sta) Bool
 while post isRejecting = do
   (_, next) <- get
   if not $ null next
@@ -39,32 +48,36 @@ while post isRejecting = do
         else while post isRejecting
     else return True
 
-processPostStates :: Eq sta => [[sta]] -> IsRejecting sta -> State (InnerState sta) Bool
-processPostStates [] _ =
-  return False
-processPostStates (p : ps) isRejecting =
-  if isRejecting p
-    then return True
-    else do
-      (processed, next) <- get
-      if not $ or [s `isLowerOrEqual` p | s <- processed `union` next]
-        then do
-          removeFromStateAllGreaterThan p
-          addToNext p
-          processPostStates ps isRejecting
-        else processPostStates ps isRejecting
+processPostStates :: Ord sta => Set (MacroState sta) -> IsRejecting sta -> State (InnerState sta) Bool
+processPostStates ps isRejecting
+  | ps == Set.empty = return False
+  | otherwise =
+    let
+        newProduct = Set.findMin ps
+        ps' = Set.delete newProduct ps
+    in
+      if isRejecting newProduct
+        then return True
+        else do
+        (processed, next) <- get
+        if not $ or [s `isLowerOrEqual` newProduct | s <- processed `Set.union` next]
+            then do
+            removeFromStateAllGreaterThan newProduct
+            addToNext newProduct
+            processPostStates ps' isRejecting
+            else processPostStates ps' isRejecting
 
-removeFromStateAllGreaterThan :: Eq sta => [sta] -> State (InnerState sta) ()
+removeFromStateAllGreaterThan :: Ord sta => MacroState sta -> State (InnerState sta) ()
 removeFromStateAllGreaterThan p = do
   (processed, next) <- get
   state $ \(processed, next) ->
     let
-      processed' = processed \\ [s | s <- processed, p `isLowerOrEqual` s ]
-      next' = next \\ [s | s <- next, p `isLowerOrEqual` s ]
+      processed' = processed Set.\\ [s | s <- processed, p `isLowerOrEqual` s ]
+      next' = next Set.\\ [s | s <- next, p `isLowerOrEqual` s ]
     in
       ((), (processed', next'))
 
-addToNext :: [sta] -> State (InnerState sta) ()
+addToNext :: Ord sta => MacroState sta -> State (InnerState sta) ()
 addToNext p =
   state $ \(processed, next) ->
-    ((), (processed, p : next))
+    ((), (processed, Set.insert p next))

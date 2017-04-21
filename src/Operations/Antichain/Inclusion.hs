@@ -1,3 +1,5 @@
+{-# LANGUAGE MonadComprehensions, BangPatterns #-}
+
 module Operations.Antichain.Inclusion
   ( isSubsetOf
   , post'
@@ -5,48 +7,54 @@ module Operations.Antichain.Inclusion
 
 import Types.Fa (Fa(..), symbols, Transition, finalState)
 import qualified Types.Fa as Fa (Transition(..)) 
-import Operations.Regular (isMacrostateAccepting, postForEachSymbol)
+import Data.Set.Monad (Set)
+import qualified Data.Set.Monad as Set
+import Operations.Regular (isMacrostateAccepting)
 import qualified Helpers (isSubsetOf, none, remove)
-import Data.List (union)
 import Control.Monad.State
 
-isLowerOrEqual :: Eq sta => [sta] -> [sta] -> Bool
+isLowerOrEqual :: Ord sta => Set sta -> Set sta -> Bool
 isLowerOrEqual =
   Helpers.isSubsetOf
 
-post' :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym sta -> ProductState sta -> [ProductState sta]
-post' fa1 fa2 (p, p') =
+post' :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym sta -> ProductState sta -> Set (ProductState sta)
+post' !fa1 !fa2 (!p, !p') =
   [ (r, [ finalState tran | tran <- transitions fa2, stat <- p', isApplicableTransition a stat tran])
-  | a <- symbols fa1 `union` symbols fa2
-  , r <- (fmap finalState . filter (isApplicableTransition a p)) (transitions fa1)
+  | a <- symbols fa1 `Set.union` symbols fa2
+  , r <- (fmap finalState . Set.filter (isApplicableTransition a p)) (transitions fa1)
   ]
     where
       isApplicableTransition symbol state (Fa.Transition symbol' state' _) =
         symbol == symbol' && state == state'
 
-type ProductState sta = (sta, [sta])
-type InnerState sta = ([ProductState sta], [ProductState sta])
-type Post sta = ProductState sta -> [ProductState sta]
+type ProductState sta = (sta, Set sta)
+type InnerState sta = (Set (ProductState sta), Set (ProductState sta))
+type Post sta = ProductState sta -> Set (ProductState sta)
 type IsAccepting sta = ProductState sta -> Bool
 
-isAccepting :: (Eq sta, Eq sta) => Fa sym sta -> Fa sym sta -> ProductState sta -> Bool
-isAccepting (Fa _ finalStates1 _) fa2 (p, r) =
+isAccepting :: (Ord sym, Ord sta, Eq sta) => Fa sym sta -> Fa sym sta -> ProductState sta -> Bool
+isAccepting (Fa _ !finalStates1 _) !fa2 !(p, r) =
   p `elem` finalStates1 && not (isMacrostateAccepting fa2 r)
 
-isSubsetOf :: (Eq sym, Ord sta) => Fa sym sta -> Fa sym sta -> Bool
-isSubsetOf fa1 fa2 =
+isSubsetOf :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym sta -> Bool
+isSubsetOf !fa1 !fa2 =
   not (any (isAccepting fa1 fa2) next) && while'
     where
       next = [(p, initialStates fa2) | p <- initialStates fa1]
       while' =
-        evalState (while (post' fa1 fa2) (isAccepting fa1 fa2)) ([], next)
+        evalState (while (post' fa1 fa2) (isAccepting fa1 fa2)) (Set.empty, next)
 
-moveRFromNextToProcessed :: State (InnerState sta) (ProductState sta)
-moveRFromNextToProcessed = state $ \(processed, r : next') ->
-  (r, (r : processed, next'))
+moveRFromNextToProcessed :: Ord sta => State (InnerState sta) (ProductState sta)
+moveRFromNextToProcessed = state $ \(!processed, !next) ->
+  let
+    r = Set.findMin next
+    processed' = Set.insert r processed
+    next' = Set.delete r next
+  in
+    (r, (processed', next'))
 
-while :: (Eq sta, Eq sta) => Post sta -> IsAccepting sta -> State (InnerState sta) Bool
-while post isAccepting = do
+while :: (Ord sta, Eq sta) => Post sta -> IsAccepting sta -> State (InnerState sta) Bool
+while !post !isAccepting = do
   (_, next) <- get
   if not $ null next
     then do
@@ -58,25 +66,30 @@ while post isAccepting = do
     else
       return True
 
-processPostStates :: Eq sta => [ProductState sta] -> IsAccepting sta -> State (InnerState sta) Bool
-processPostStates [] _ =
-  return False
-processPostStates (newProduct : ps) isAccepting =
-  if isAccepting newProduct
-    then return True
-    else do
-      (processed, next) <- get
-      if not (uncurry elem newProduct) && Helpers.none (\(s, s') -> fst newProduct == s && (s' `isLowerOrEqual` snd newProduct)) (processed `union` next)
-        then do
-          removeFromStateAllGreaterThan newProduct
-          addToNext newProduct
-          processPostStates ps isAccepting
-        else processPostStates ps isAccepting
+processPostStates :: Ord sta => Set (ProductState sta) -> IsAccepting sta -> State (InnerState sta) Bool
+processPostStates !ps !isAccepting
+  | null ps = return False
+  | otherwise =
+    let
+      newProduct = Set.findMin ps
+      ps' = Set.delete newProduct ps
+    in
+      if isAccepting newProduct
+        then return True
+        else do
+          (processed, next) <- get
+          if not (uncurry elem newProduct) && Helpers.none (\(s, s') -> fst newProduct == s && (s' `isLowerOrEqual` snd newProduct)) (processed `Set.union` next)
+            then do
+              removeFromStateAllGreaterThan newProduct
+              addToNext newProduct
+              processPostStates ps' isAccepting
+            else
+              processPostStates ps' isAccepting
 
-removeFromStateAllGreaterThan :: Eq sta => ProductState sta -> State (InnerState sta) ()
-removeFromStateAllGreaterThan p = do
+removeFromStateAllGreaterThan :: Ord sta => ProductState sta -> State (InnerState sta) ()
+removeFromStateAllGreaterThan !p = do
   (processed, next) <- get
-  state $ \(processed, next) ->
+  state $ \(!processed, !next) ->
     let
       predicate (s, s') = s == fst p && s' `isLowerOrEqual` snd p
       processed' = Helpers.remove predicate processed
@@ -84,7 +97,7 @@ removeFromStateAllGreaterThan p = do
     in
       ((), (processed', next'))
 
-addToNext :: ProductState sta -> State (InnerState sta) ()
+addToNext :: Ord sta => ProductState sta -> State (InnerState sta) ()
 addToNext p =
-  state $ \(processed, next) ->
-    ((), (processed, p : next))
+  state $ \(!processed, !next) ->
+    ((), (processed, Set.insert p next))
