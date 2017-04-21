@@ -18,6 +18,7 @@ library
   exposed-modules:     Operations.Regular
                      , Operations.WithExternalSymbols
                      , Operations.Antichain.Inclusion
+                     , Operations.Antichain.Universality
                      , Testing
                      , Helpers
                      , Parsing.General
