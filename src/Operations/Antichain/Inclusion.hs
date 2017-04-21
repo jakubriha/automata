@@ -68,7 +68,7 @@ while !post !isAccepting = do
 
 processPostStates :: Ord sta => Set (ProductState sta) -> IsAccepting sta -> State (InnerState sta) Bool
 processPostStates !ps !isAccepting
-  | ps == Set.empty = return False
+  | null ps = return False
   | otherwise =
     let
       newProduct = Set.findMin ps
@@ -100,4 +100,4 @@ removeFromStateAllGreaterThan !p = do
 addToNext :: Ord sta => ProductState sta -> State (InnerState sta) ()
 addToNext p =
   state $ \(!processed, !next) ->
-    ((), (processed, next `Set.union` Set.singleton p))
+    ((), (processed, Set.insert p next))
