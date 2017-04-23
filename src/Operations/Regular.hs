@@ -25,7 +25,7 @@ charsToSymbols = fmap (: [])
 
 isMacrostateAccepting :: Eq sta => Fa sym sta -> [sta] -> Bool
 isMacrostateAccepting fa states =
-  states `List.intersect` finalStates fa /= []
+  not $ null $ states `List.intersect` finalStates fa
 
 run :: (Eq sym, Eq sta) => Fa sym sta -> [sym] -> Bool
 run fa =
