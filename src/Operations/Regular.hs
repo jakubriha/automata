@@ -24,7 +24,7 @@ charsToSymbols = fmap (: [])
 
 isMacrostateAccepting :: Ord sta => Fa sym sta -> Set sta -> Bool 
 isMacrostateAccepting fa states = 
-  states `Set.intersection` finalStates fa /= Set.empty
+  not $ Set.null $ states `Set.intersection` finalStates fa
 
 run :: (Ord sym, Ord sta) => Fa sym sta -> [sym] -> Bool
 run fa =
