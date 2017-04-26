@@ -52,6 +52,9 @@ do
         multiply="0.001"
       elif [ "$unit" == "ns" ]; then
         multiply="0.000001"
+      elif [ "$unit" == "ps" ]; then
+        echo "ps unit" $unit
+        exit
       else
         echo "unknown unit" $unit
         exit
