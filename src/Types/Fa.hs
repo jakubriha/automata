@@ -21,6 +21,7 @@ type Symbol =
 type State =
   String
 
+-- |Represents a transition of a FA with symbol 'sym' and states 'sta'.
 data Transition sym sta =
   Transition
     { symbol :: sym
@@ -28,6 +29,7 @@ data Transition sym sta =
     , finalState :: sta
     } deriving (Eq, Ord, NFData, Generic)
 
+-- |Represents a finite automaton (FA) with symbols 'sym' and states 'sta'.
 data Fa sym sta =
   Fa
     { initialStates :: Set sta
@@ -35,12 +37,14 @@ data Fa sym sta =
     , transitions :: Set (Transition sym sta)
     } deriving (NFData, Generic)
 
+-- | Returns states of a FA.
 states :: (Ord sta) => Fa sym sta -> Set sta
 states (Fa initialStates finalStates transitions) =
   Set.unions [initialStates, finalStates, Set.fromList $ concatMap mapper transitions]
     where
       mapper (Transition _ state finalState) = [state, finalState]
 
+-- | Returns alphabet of a FA.
 symbols :: Ord sym => Fa sym sta -> Set sym
 symbols (Fa _ _ transitions) =
   fmap symbol transitions
@@ -49,6 +53,7 @@ instance (Show sym, Show sta) => Show (Transition sym sta) where
   show (Transition symbol state finalState) =
     show symbol ++ "(" ++ show state ++ ") -> " ++ show finalState
 
+-- | Returns string representation of a FA in the Timbuk file format.
 instance (Ord sym, Show sym, Ord sta, Show sta) => Show (Fa sym sta) where
   show fa =
     printSymbolList (symbols fa) ++ "\n\n" ++ printAutomaton fa

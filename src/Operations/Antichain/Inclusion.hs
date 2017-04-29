@@ -2,7 +2,6 @@
 
 module Operations.Antichain.Inclusion
   ( isSubsetOf
-  , post'
   ) where
 
 import Types.Fa (Fa(..), symbols, Transition, finalState)
@@ -36,6 +35,7 @@ isAccepting :: (Ord sym, Ord sta, Eq sta) => Fa sym sta -> Fa sym sta -> Product
 isAccepting (Fa _ !finalStates1 _) !fa2 !(p, r) =
   p `elem` finalStates1 && not (isMacrostateAccepting fa2 r)
 
+-- |Checks whether the first FA is subset of the second FA using the antichain-based algorithm.
 isSubsetOf :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym sta -> Bool
 isSubsetOf !fa1 !fa2 =
   not (any (isAccepting fa1 fa2) next) && while'

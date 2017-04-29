@@ -20,6 +20,7 @@ type InnerState sta = (Set (MacroState sta), Set (MacroState sta))
 type Post sta = MacroState sta -> Set (MacroState sta)
 type IsRejecting sta = MacroState sta -> Bool
 
+-- |Checks whether a FA accepts all possible strings using the antichain-based algorithm.
 isUniversal:: (Ord sym, Ord sta) => Fa sym sta -> Bool
 isUniversal fa =
   isMacrostateAccepting fa (initialStates fa) && while'

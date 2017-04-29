@@ -23,6 +23,7 @@ type Rank =
 type RankedAlphabet =
   Set (Symbol, Rank)
 
+-- |Represents a transition of a FTA.
 data Transition =
   Transition
     { symbol :: Symbol
@@ -34,6 +35,7 @@ instance Show Transition where
   show (Transition symbol inputStates finalState) =
     show symbol ++ "(" ++ show inputStates ++ ")->" ++ show finalState
 
+-- |Represents a finite tree automaton (FTA).
 data Fta =
   Fta
     { states :: Set State

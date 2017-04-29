@@ -13,6 +13,7 @@ import Text.Parsec.Number
 
 import Types.Fta
 
+-- |Returns a FTA parsed from a string. Possible failure is represented by the 'm' type.
 parseFta :: (Monad m) => ByteString -> m Fta
 parseFta fileContent =
   case runParser file () "" fileContent of

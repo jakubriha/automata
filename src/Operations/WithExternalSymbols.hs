@@ -1,7 +1,14 @@
 {-# LANGUAGE MonadComprehensions #-}
 
+{-|
+Module      : Operations.WithExternalSymbols
+Description : Contains FA operations. Each operation has one extra parameter to
+              pass an external alphabet which is used instead of the implicit
+              alphabet.
+-}
 module Operations.WithExternalSymbols
-  ( postForEachSymbol
+  ( post
+  , postForEachSymbol
   , transitionsCreator
   , intersect
   , determinize
@@ -17,13 +24,17 @@ import qualified Data.Set.Monad as Set
 import Control.Monad.State
 import Control.Monad.Loops (whileM_)
 
+-- |Converts String to a list of symbols.
 charsToSymbols :: String -> [Symbol]
-charsToSymbols = fmap (: [])
+charsToSymbols =
+  fmap (: [])
 
+-- |Determines whether a macro-state is accepting.
 isMacrostateAccepting :: Ord sta => Fa sym sta -> Set sta -> Bool
 isMacrostateAccepting fa states =
   states `Set.intersection` finalStates fa /= Set.empty
 
+-- |Returns the post state of a state and a specific symbol.
 post :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> sym -> Set sta
 post fa currentStates symbol =
   fmap finalState $ Set.filter isApplicableTransition $ transitions fa
@@ -31,9 +42,10 @@ post fa currentStates symbol =
       isApplicableTransition (Transition tSymbol state _) =
         tSymbol == symbol && state `elem` currentStates
 
-postForEachSymbol :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Set sta -> Set (Set sta)
-postForEachSymbol symbols fa state =
-  fmap (post fa state) symbols
+-- |Returns the post states for each symbol of the alphabet.
+postForEachSymbol :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> Set sym -> Set (Set sta)
+postForEachSymbol fa state =
+  fmap (post fa state)
 
 transitionsCreator
   :: (Ord sym1, Ord sym2)
@@ -54,6 +66,7 @@ transitionsCreator symbols1 symbols2 function predicate fa1 fa2 =
   , symbol1k == symbol1 && symbol2k == symbol2
   ]
 
+-- |Creates an intersection of two FAs.
 intersect :: Ord sym => Set sym -> Set sym -> Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
 intersect fa1Symbols fa2Symbols fa1 fa2 =
   Fa
@@ -101,10 +114,12 @@ while fa@(Fa initialStates finalStates _) symbols = do
     where
       newFinalStates = Set.filter $ not . Set.null . (`Set.intersection` finalStates)
 
+-- |Converts a FA to an equivalent deterministic FA.
 determinize :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
 determinize symbols fa =
   evalState (while fa symbols) (Set.singleton (initialStates fa), Set.empty, Set.empty)
 
+-- |Creates a complement of a FA.
 complement :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
 complement symbols =
   updateFinalStates . determinize symbols
@@ -112,6 +127,7 @@ complement symbols =
       updateFinalStates fa@(Fa initialStates finalStates transitions) =
         Fa initialStates (states fa Set.\\ finalStates) transitions
 
+-- |Checks whether a FA accepts an empty language.
 isEmpty :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Bool
 isEmpty symbols =
   not . hasTerminatingPath symbols
@@ -126,18 +142,20 @@ hasTerminatingPath symbols fa =
         | otherwise =
           let
             processed' = processed `Set.union` next
-            next' = newStates symbols fa next Set.\\ processed'
+            next' = newStates fa next symbols Set.\\ processed'
           in
             hasTerminatingPath' processed' next'
 
-newStates :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Set sta -> Set sta
-newStates symbols fa states =
-  Set.unions $ Set.toList $ postForEachSymbol symbols fa states
+newStates :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> Set sym -> Set sta
+newStates fa states symbols =
+  Set.unions $ Set.toList $ postForEachSymbol fa states symbols 
 
+-- |Checks whether the first FA is subset of the second FA using the classical algorithm.
 isSubsetOf :: (Ord sym, Ord sta) => Set sym -> Set sym -> Fa sym sta -> Fa sym sta -> Bool
 isSubsetOf fa1Symbols fa2Symbols fa1 fa2 =
   isEmpty (fa1Symbols `Set.union` fa2Symbols) (intersect fa1Symbols fa2Symbols fa1 (complement fa2Symbols fa2))
 
+-- |Checks whether a FA accepts all possible strings using the classical algorithm.
 isUniversal :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Bool
 isUniversal symbols fa =
   not (null $ states fa) && isSubsetOf symbols symbols universalFA fa

@@ -9,6 +9,7 @@ import System.Process (callProcess)
 import System.IO (hClose, openTempFile)
 import Types.Fa
 
+-- |Displays a window with a diagram representation of a FA.
 displayFa :: (Show sym, Show sta) => Fa sym sta -> IO ()
 displayFa fa = do
   tempDirectory <- getTemporaryDirectory
