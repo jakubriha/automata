@@ -10,7 +10,7 @@ Implementation of an efficient functional library for finite automata (FA). This
 * Inclusion testing (function `isSubsetOf`),
 * Universality testing (function `isUniversal`).
 
-Most of these operations also have their counterparts (in the module `Operations.WithExternalSymbols`), which allow to specify symbols set to work with. For example, the function `isEmpty :: [sym] -> Fa sym sta -> Bool` from this module has the first parameter for this reason.
+Most of these operations also have their counterparts (in the module `Operations.WithExternalSymbols`), which allow to specify symbols set to work with. For example, the function `isEmpty :: Set sym -> Fa sym sta -> Bool` from this module has the first parameter, `Set sym`, for this reason.
 
 Function `union` only supports FAs that both have the *same* type of a state. To overcome that, you can use a function `union` (in the module `Operations.Product`), which performs union of two FAs in which each has a different type of a state.
 
