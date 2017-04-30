@@ -7,7 +7,8 @@ Description : Contains FA operations. Each operation has one extra parameter to
               alphabet.
 -}
 module Operations.WithExternalSymbols
-  ( post
+  ( isMacrostateAccepting
+  , post
   , postForEachSymbol
   , transitionsCreator
   , intersect
