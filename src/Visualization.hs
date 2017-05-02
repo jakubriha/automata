@@ -28,11 +28,20 @@ saveDotToImageFile dotFilePath imageFilePath dotContent = do
   callProcess "dot" ["-Tpng", dotFilePath, "-o", imageFilePath]
 
 faToDot :: (Show sym, Show sta) => Fa sym sta -> String
-faToDot (Fa _ finalStates transitions) =
-  "digraph something {{" ++ finalStatesToDot finalStates ++ "}" ++ transitionsToDot transitions ++ "}"
+faToDot (Fa initialStates finalStates transitions) =
+  "digraph something { node [shape=circle] {" ++
+  initialStatesToDot initialStates ++
+  finalStatesToDot finalStates ++
+  "}" ++
+  transitionsToDot transitions ++
+  "}"
     where
+
+      initialStatesToDot =
+        concatMap (\state -> showInQuotes state ++ " [color=red];")
+      
       finalStatesToDot =
-        concatMap (\state -> showInQuotes state ++ " [ shape=doublecircle ];")
+        concatMap (\state -> showInQuotes state ++ " [shape=doublecircle];")
 
       transitionsToDot =
         concatMap mapper
