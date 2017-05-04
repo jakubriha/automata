@@ -9,6 +9,7 @@ module Operations.Regular
   , run
   , module Operations.WithExternalSymbols
   , postForEachSymbol
+  , union
   ) where
 
 import Types.Fa
@@ -41,3 +42,11 @@ run fa =
         isMacrostateAccepting fa currentStates
       run' currentStates (x:xs) =
         run' (post fa currentStates x) xs
+
+-- |Creates a union of two FAs.
+union :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym sta -> Fa sym sta
+union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
+  Fa
+    (initialStates1 `Set.union` initialStates2)
+    (finalStates1 `Set.union` finalStates2)
+    (transitions1 `Set.union` transitions2)

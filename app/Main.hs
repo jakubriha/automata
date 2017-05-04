@@ -58,13 +58,31 @@ benchmarkForce action param = do
 --           case parseFa file2 of
 --             Left error -> fail error
 --             Right fa2 ->
---               return ()
+--               benchmarkForce Regular.union (force fa1) (force fa2) >>= print
               
 --               -- print $ intersect (force fa1) (force fa2)
 --               -- defaultMain [ bench "universality" $ nf (intersect (force fa1)) (force fa2) ]
 
 -- parseArguments :: [String] -> Maybe (FilePath, FilePath)
--- parseArguments [_, x, y] =
+-- parseArguments [x, y] =
 --   Just (x, y)
 -- parseArguments _ =
 --   Nothing
+
+-- benchmarkForce :: (NFData a, NFData p, NFData r) => (p -> r -> a) -> p -> r -> IO a 
+-- benchmarkForce action param1 param2 = do 
+--   let diffTimeInSeconds t1 t2 = realToFrac (t2 `diffUTCTime` t1) :: Double 
+ 
+--   param1Eval <- (evaluate . force) param1 
+--   param2Eval <- (evaluate . force) param2 
+ 
+--   before <- getCurrentTime 
+ 
+--   -- Force the first time to measure computation + forcing 
+--   result <- (evaluate . force) (action param1Eval param2Eval) 
+ 
+--   after <- getCurrentTime 
+ 
+--   hPutStrLn stderr $ showFFloat Nothing (diffTimeInSeconds before after) "" 
+ 
+--   return result
