@@ -10,7 +10,6 @@ module Operations.WithExternalSymbols
   ( isMacrostateAccepting
   , post
   , postForEachSymbol
-  , transitionsCreator
   , intersect
   , determinize
   , complement
@@ -48,32 +47,22 @@ postForEachSymbol :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> Set sym -> S
 postForEachSymbol fa state =
   fmap (post fa state)
 
-transitionsCreator
-  :: (Ord sym1, Ord sym2)
-  => Set sym1
-  -> Set sym2
-  -> (sym1 -> sym2 -> sym)
-  -> (sym1 -> sym2 -> Bool)
-  -> Fa sym1 sta1
-  -> Fa sym2 sta2
-  -> Set (Transition sym (sta1, sta2))
-transitionsCreator symbols1 symbols2 function predicate fa1 fa2 =
-  [ Transition (function symbol1 symbol2) (source1, source2) (target1, target2)
-  | symbol1 <- symbols1
-  , symbol2 <- symbols2
-  , predicate symbol1 symbol2
-  , (Transition symbol1k source1 target1) <- transitions fa1
-  , (Transition symbol2k source2 target2) <- transitions fa2
-  , symbol1k == symbol1 && symbol2k == symbol2
-  ]
-
 -- |Creates an intersection of two FAs.
-intersect :: Ord sym => Set sym -> Set sym -> Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
-intersect fa1Symbols fa2Symbols fa1 fa2 =
-  Fa
-    [(state1, state2) | state1 <- initialStates fa1, state2 <- initialStates fa2]
-    [(state1, state2) | state1 <- finalStates fa1, state2 <- finalStates fa2]
-    (transitionsCreator fa1Symbols fa2Symbols const (==) fa1 fa2)
+intersect :: (Ord sym, Ord sta1, Ord sta2) => Set sym -> Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
+intersect symbols (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
+  let
+    transitionsPerSymbol symbol =
+        [ Transition symbol (source1, source2) (target1, target2)
+        | (Transition symbol1 source1 target1) <- transitions1
+        , (Transition symbol2 source2 target2) <- transitions2
+        , symbol1 == symbol && symbol2 == symbol
+        ]
+    transitions = (Set.unions . Set.toList . fmap transitionsPerSymbol) symbols
+  in
+    Fa
+      [(initial1, initial2) | initial1 <- initialStates1, initial2 <- initialStates2]
+      [(final1, final2) | final1 <- finalStates1, final2 <- finalStates2]
+      transitions
 
 type Front sta = Set (Set sta)
 type NewStates sta = Set (Set sta)
@@ -154,7 +143,7 @@ newStates fa states symbols =
 -- |Checks whether the first FA is subset of the second FA using the classical algorithm.
 isSubsetOf :: (Ord sym, Ord sta) => Set sym -> Set sym -> Fa sym sta -> Fa sym sta -> Bool
 isSubsetOf fa1Symbols fa2Symbols fa1 fa2 =
-  isEmpty (fa1Symbols `Set.union` fa2Symbols) (intersect fa1Symbols fa2Symbols fa1 (complement fa2Symbols fa2))
+  isEmpty (fa1Symbols `Set.union` fa2Symbols) (intersect (fa1Symbols `Set.union` fa2Symbols) fa1 (complement fa2Symbols fa2))
 
 -- |Checks whether a FA accepts all possible strings using the classical algorithm.
 isUniversal :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Bool
