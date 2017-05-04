@@ -10,8 +10,8 @@ module Types.Fa
   ) where
 
 import Data.List (intercalate)
-import Data.Set.Monad (Set)
-import qualified Data.Set.Monad as Set
+import Data.Set (Set)
+import qualified Data.Set as Set
 import Control.DeepSeq (NFData)
 import GHC.Generics (Generic)
 
@@ -47,7 +47,7 @@ states (Fa initialStates finalStates transitions) =
 -- | Returns alphabet of a FA.
 symbols :: Ord sym => Fa sym sta -> Set sym
 symbols (Fa _ _ transitions) =
-  fmap symbol transitions
+  Set.map symbol transitions
 
 instance (Show sym, Show sta) => Show (Transition sym sta) where
   show (Transition symbol source target) =

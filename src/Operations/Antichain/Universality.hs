@@ -1,4 +1,4 @@
-{-# LANGUAGE MonadComprehensions #-}
+{-# LANGUAGE MonadComprehensions, BangPatterns #-}
 
 module Operations.Antichain.Universality
   ( isUniversal
@@ -7,8 +7,8 @@ module Operations.Antichain.Universality
 import Types.Fa (Fa, initialStates, symbols)
 import Operations.Regular (isMacrostateAccepting, postForEachSymbol)
 import qualified Helpers (isSubsetOf)
-import Data.Set.Monad (Set)
-import qualified Data.Set.Monad as Set
+import Data.Set (Set)
+import qualified Data.Set as Set
 import Control.Monad.State
 
 isLowerOrEqual :: Ord sta => Set sta -> Set sta -> Bool
@@ -22,14 +22,14 @@ type IsRejecting sta = MacroState sta -> Bool
 
 -- |Checks whether a FA accepts all possible strings using the antichain-based algorithm.
 isUniversal:: (Ord sym, Ord sta) => Fa sym sta -> Bool
-isUniversal fa =
+isUniversal !fa =
   isMacrostateAccepting fa (initialStates fa) && while'
     where
       while' =
         evalState (while (postForEachSymbol fa) (not . isMacrostateAccepting fa)) (Set.empty, Set.singleton $ initialStates fa)
 
 moveRFromNextToProcessed :: Ord sta => State (InnerState sta) (MacroState sta)
-moveRFromNextToProcessed = state $ \(processed, next) ->
+moveRFromNextToProcessed = state $ \(!processed, !next) ->
   let
     r = Set.findMin next
     processed' = Set.insert r processed
@@ -38,7 +38,7 @@ moveRFromNextToProcessed = state $ \(processed, next) ->
     (r, (processed', next'))
 
 while :: Ord sta => Post sta -> IsRejecting sta -> State (InnerState sta) Bool
-while post isRejecting = do
+while !post !isRejecting = do
   (_, next) <- get
   if not $ null next
     then do
@@ -50,7 +50,7 @@ while post isRejecting = do
     else return True
 
 processPostStates :: Ord sta => Set (MacroState sta) -> IsRejecting sta -> State (InnerState sta) Bool
-processPostStates ps isRejecting
+processPostStates !ps !isRejecting
   | ps == Set.empty = return False
   | otherwise =
     let
@@ -61,7 +61,8 @@ processPostStates ps isRejecting
         then return True
         else do
         (processed, next) <- get
-        if not $ or [s `isLowerOrEqual` newProduct | s <- processed `Set.union` next]
+        if not $ or (Set.map (`isLowerOrEqual` newProduct) (processed `Set.union` next))
+        -- if not $ or [s `isLowerOrEqual` newProduct | s <- processed `Set.union` next]
             then do
             removeFromStateAllGreaterThan newProduct
             addToNext newProduct
@@ -69,16 +70,16 @@ processPostStates ps isRejecting
             else processPostStates ps' isRejecting
 
 removeFromStateAllGreaterThan :: Ord sta => MacroState sta -> State (InnerState sta) ()
-removeFromStateAllGreaterThan p = do
+removeFromStateAllGreaterThan !p = do
   (processed, next) <- get
   state $ \(processed, next) ->
     let
-      processed' = processed Set.\\ [s | s <- processed, p `isLowerOrEqual` s ]
-      next' = next Set.\\ [s | s <- next, p `isLowerOrEqual` s ]
+      processed' = processed Set.\\ Set.filter (\s -> p `isLowerOrEqual` s) processed
+      next' = next Set.\\ Set.filter (\s -> p `isLowerOrEqual` s) next
     in
       ((), (processed', next'))
 
 addToNext :: Ord sta => MacroState sta -> State (InnerState sta) ()
 addToNext p =
-  state $ \(processed, next) ->
+  state $ \(!processed, !next) ->
     ((), (processed, Set.insert p next))

@@ -4,8 +4,8 @@ module Helpers
   , remove
   ) where
 
-import Data.Set.Monad (Set)
-import qualified Data.Set.Monad as Set
+import Data.Set (Set)
+import qualified Data.Set as Set
 
 -- |Checks whether a set is a subset of the other set.
 isSubsetOf :: Ord a => Set a -> Set a -> Bool
