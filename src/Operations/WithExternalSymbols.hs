@@ -38,10 +38,10 @@ isMacrostateAccepting fa states =
 -- |Returns the post state of a state and a specific symbol.
 post :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> sym -> Set sta
 post fa currentStates symbol =
-  fmap finalState $ Set.filter isApplicableTransition $ transitions fa
+  fmap target $ Set.filter isApplicableTransition $ transitions fa
     where
-      isApplicableTransition (Transition tSymbol state _) =
-        tSymbol == symbol && state `elem` currentStates
+      isApplicableTransition (Transition tSymbol source _) =
+        tSymbol == symbol && source `elem` currentStates
 
 -- |Returns the post states for each symbol of the alphabet.
 postForEachSymbol :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> Set sym -> Set (Set sta)
@@ -58,12 +58,12 @@ transitionsCreator
   -> Fa sym2 sta2
   -> Set (Transition sym (sta1, sta2))
 transitionsCreator symbols1 symbols2 function predicate fa1 fa2 =
-  [ Transition (function symbol1 symbol2) (state1, state2) (final1, final2)
+  [ Transition (function symbol1 symbol2) (source1, source2) (target1, target2)
   | symbol1 <- symbols1
   , symbol2 <- symbols2
   , predicate symbol1 symbol2
-  , (Transition symbol1k state1 final1) <- transitions fa1
-  , (Transition symbol2k state2 final2) <- transitions fa2
+  , (Transition symbol1k source1 target1) <- transitions fa1
+  , (Transition symbol2k source2 target2) <- transitions fa2
   , symbol1k == symbol1 && symbol2k == symbol2
   ]
 

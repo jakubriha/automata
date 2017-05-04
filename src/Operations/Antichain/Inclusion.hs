@@ -4,7 +4,7 @@ module Operations.Antichain.Inclusion
   ( isSubsetOf
   ) where
 
-import Types.Fa (Fa(..), symbols, Transition, finalState)
+import Types.Fa (Fa(..), symbols, Transition, target)
 import qualified Types.Fa as Fa (Transition(..)) 
 import Data.Set.Monad (Set)
 import qualified Data.Set.Monad as Set
@@ -18,13 +18,13 @@ isLowerOrEqual =
 
 post' :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym sta -> ProductState sta -> Set (ProductState sta)
 post' !fa1 !fa2 (!p, !p') =
-  [ (r, [ finalState tran | tran <- transitions fa2, stat <- p', isApplicableTransition a stat tran])
+  [ (r, [ target tran | tran <- transitions fa2, stat <- p', isApplicableTransition a stat tran])
   | a <- symbols fa1 `Set.union` symbols fa2
-  , r <- (fmap finalState . Set.filter (isApplicableTransition a p)) (transitions fa1)
+  , r <- (fmap target . Set.filter (isApplicableTransition a p)) (transitions fa1)
   ]
     where
-      isApplicableTransition symbol state (Fa.Transition symbol' state' _) =
-        symbol == symbol' && state == state'
+      isApplicableTransition symbol state (Fa.Transition symbol' source _) =
+        symbol == symbol' && state == source
 
 type ProductState sta = (sta, Set sta)
 type InnerState sta = (Set (ProductState sta), Set (ProductState sta))
