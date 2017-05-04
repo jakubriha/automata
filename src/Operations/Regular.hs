@@ -57,20 +57,10 @@ union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStat
     (finalStates1 `Set.union` finalStates2)
     (transitions1 `Set.union` transitions2)
 
-transitionsCreator
-  :: (Ord sym1, Ord sym2)
-  => (sym1 -> sym2 -> sym)
-  -> (sym1 -> sym2 -> Bool)
-  -> Fa sym1 sta1
-  -> Fa sym2 sta2
-  -> Set (Transition sym (sta1, sta2))
-transitionsCreator function predicate fa1 fa2 =
-  ExternalSymbols.transitionsCreator (symbols fa1) (symbols fa2) function predicate fa1 fa2
-
 -- |Creates an intersection of two FAs.
-intersect :: Ord sym => Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
+intersect :: (Ord sym, Ord sta1, Ord sta2) => Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
 intersect fa1 fa2 =
-  ExternalSymbols.intersect (symbols fa1) (symbols fa2) fa1 fa2
+  ExternalSymbols.intersect (symbols fa1 `Set.union` symbols fa2) fa1 fa2
 
 -- |Converts a FA to an equivalent deterministic FA.
 determinize :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym (Set sta)

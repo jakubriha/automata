@@ -25,8 +25,8 @@ type State =
 data Transition sym sta =
   Transition
     { symbol :: sym
-    , state :: sta
-    , finalState :: sta
+    , source :: sta
+    , target :: sta
     } deriving (Eq, Ord, NFData, Generic)
 
 -- |Represents a finite automaton (FA) with symbols 'sym' and states 'sta'.
@@ -42,7 +42,7 @@ states :: (Ord sta) => Fa sym sta -> Set sta
 states (Fa initialStates finalStates transitions) =
   Set.unions [initialStates, finalStates, Set.fromList $ concatMap mapper transitions]
     where
-      mapper (Transition _ state finalState) = [state, finalState]
+      mapper (Transition _ source target) = [source, target]
 
 -- | Returns alphabet of a FA.
 symbols :: Ord sym => Fa sym sta -> Set sym
@@ -50,8 +50,8 @@ symbols (Fa _ _ transitions) =
   fmap symbol transitions
 
 instance (Show sym, Show sta) => Show (Transition sym sta) where
-  show (Transition symbol state finalState) =
-    show symbol ++ "(" ++ show state ++ ") -> " ++ show finalState
+  show (Transition symbol source target) =
+    show symbol ++ "(" ++ show source ++ ") -> " ++ show target
 
 -- | Returns string representation of a FA in the Timbuk file format.
 instance (Ord sym, Show sym, Ord sta, Show sta) => Show (Fa sym sta) where
