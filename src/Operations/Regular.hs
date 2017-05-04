@@ -10,6 +10,7 @@ module Operations.Regular
   , module Operations.WithExternalSymbols
   , postForEachSymbol
   , union
+  , determinize
   ) where
 
 import Types.Fa
@@ -50,3 +51,7 @@ union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStat
     (initialStates1 `Set.union` initialStates2)
     (finalStates1 `Set.union` finalStates2)
     (transitions1 `Set.union` transitions2)
+
+determinize :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym (Set sta) 
+determinize fa = 
+  ExternalSymbols.determinize (symbols fa) fa
