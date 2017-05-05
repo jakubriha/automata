@@ -11,6 +11,7 @@ module Operations.Regular
   , postForEachSymbol
   , union
   , determinize
+  , complement
   ) where
 
 import Types.Fa
@@ -55,3 +56,7 @@ union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStat
 determinize :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym (Set sta) 
 determinize fa = 
   ExternalSymbols.determinize (symbols fa) fa
+
+complement :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym (Set sta)
+complement fa =
+  ExternalSymbols.complement (symbols fa) fa

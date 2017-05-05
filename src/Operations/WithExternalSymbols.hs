@@ -11,6 +11,7 @@ module Operations.WithExternalSymbols
   , post
   , postForEachSymbol
   , determinize
+  , complement
   ) where
 
 import Types.Fa hiding (State, state, symbols)
@@ -85,3 +86,10 @@ while fa@(Fa initialStates finalStates _) !symbols = do
 determinize :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
 determinize !symbols !fa =
   evalState (while fa symbols) (Set.singleton (initialStates fa), Set.empty, Set.empty)
+
+complement :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
+complement symbols =
+  updateFinalStates . determinize symbols
+    where
+      updateFinalStates fa@(Fa initialStates finalStates transitions) =
+        Fa initialStates (states fa Set.\\ finalStates) transitions
