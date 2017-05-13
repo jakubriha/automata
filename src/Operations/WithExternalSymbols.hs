@@ -10,14 +10,17 @@ module Operations.WithExternalSymbols
   ( isMacrostateAccepting
   , post
   , postForEachSymbol
+  , intersect
   , determinize
   , complement
   ) where
 
 import Types.Fa hiding (State, state, symbols)
+import Helpers (andThen, guard)
+import qualified Helpers
 import Data.Set (Set)
 import qualified Data.Set as Set
-import Control.Monad.State
+import Control.Monad.State hiding (guard, return)
 import Control.Monad.Loops (whileM_)
 
 -- |Converts String to a list of symbols.
@@ -42,6 +45,32 @@ post fa currentStates symbol =
 postForEachSymbol :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> Set sym -> Set (Set sta)
 postForEachSymbol fa state =
   Set.map (post fa state)
+
+transitionsCreator
+  :: (Ord sym, Ord sym1, Ord sym2, Ord sta1, Ord sta2)
+  => Set sym1
+  -> Set sym2
+  -> (sym1 -> sym2 -> sym)
+  -> (sym1 -> sym2 -> Bool)
+  -> Fa sym1 sta1
+  -> Fa sym2 sta2
+  -> Set (Transition sym (sta1, sta2))
+transitionsCreator symbols1 symbols2 function predicate fa1 fa2 =
+  symbols1 `andThen` (\symbol1 ->
+  symbols2 `andThen` (\symbol2 ->
+  guard (predicate symbol1 symbol2) `andThen` (\_ ->
+  transitions fa1 `andThen` (\(Transition symbol1k state1 final1) ->
+  transitions fa2 `andThen` (\(Transition symbol2k state2 final2) ->
+  guard (symbol1k == symbol1 && symbol2k == symbol2) `andThen` (\_ ->
+  Helpers.return $ Transition (function symbol1 symbol2) (state1, state2) (final1, final2)))))))
+
+-- |Creates an intersection of two FAs.
+intersect :: (Ord sym, Ord sta1, Ord sta2) => Set sym -> Set sym -> Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
+intersect fa1Symbols fa2Symbols fa1 fa2 =
+  Fa
+    (initialStates fa1 `andThen` (\state1 -> initialStates fa2 `andThen` (\state2 -> Helpers.return (state1, state2))))
+    (finalStates fa1 `andThen` (\state1 -> finalStates fa2 `andThen` (\state2 -> Helpers.return (state1, state2))))
+    (transitionsCreator fa1Symbols fa2Symbols const (==) fa1 fa2)
 
 type Front sta = Set (Set sta)
 type NewStates sta = Set (Set sta)
@@ -79,7 +108,7 @@ while :: (Ord sym, Ord sta) => Fa sym sta -> Set sym -> State (InnerState sym st
 while fa@(Fa initialStates finalStates _) !symbols = do
   whileM_ frontNotEmpty (whileBody fa symbols)
   (_, newStates, newTransitions) <- get
-  return $ Fa (Set.singleton initialStates) (newFinalStates newStates) newTransitions
+  Prelude.return $ Fa (Set.singleton initialStates) (newFinalStates newStates) newTransitions
     where
       newFinalStates = Set.filter $ not . Set.null . (`Set.intersection` finalStates)
 

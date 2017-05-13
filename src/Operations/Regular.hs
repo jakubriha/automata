@@ -10,6 +10,7 @@ module Operations.Regular
   , module Operations.WithExternalSymbols
   , postForEachSymbol
   , union
+  , intersect
   , determinize
   , complement
   ) where
@@ -52,6 +53,10 @@ union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStat
     (initialStates1 `Set.union` initialStates2)
     (finalStates1 `Set.union` finalStates2)
     (transitions1 `Set.union` transitions2)
+
+intersect :: (Ord sym, Ord sta1, Ord sta2) => Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
+intersect fa1 fa2 =
+  ExternalSymbols.intersect (symbols fa1) (symbols fa2) fa1 fa2
 
 determinize :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym (Set sta) 
 determinize fa = 
