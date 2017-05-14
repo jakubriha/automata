@@ -61,7 +61,10 @@ test-suite automata-test
                      , hspec
                      , QuickCheck
   other-modules:       Tests.Common
+                     , Tests.Operations.ComplementSpec
+                     , Tests.Operations.DeterminizeSpec
                      , Tests.Operations.IntersectSpec
+                     , Tests.Operations.IsSubsetOfSpec
                      , Tests.Operations.IsUniversalSpec
                      , Tests.Operations.RunSpec
                      , Tests.Parsing.GeneralSpec
