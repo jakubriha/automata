@@ -17,6 +17,7 @@ library
   hs-source-dirs:      src
   exposed-modules:     Operations.Regular
                      , Operations.WithExternalSymbols
+                     , Operations.Antichain.Inclusion
                      , Operations.Antichain.Universality
                      , Testing
                      , Helpers
@@ -60,6 +61,7 @@ test-suite automata-test
                      , hspec
                      , QuickCheck
   other-modules:       Tests.Common
+                     , Tests.Operations.IntersectSpec
                      , Tests.Operations.IsUniversalSpec
                      , Tests.Operations.RunSpec
                      , Tests.Parsing.GeneralSpec
