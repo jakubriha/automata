@@ -1,4 +1,4 @@
-{-# LANGUAGE MonadComprehensions, BangPatterns #-}
+{-# LANGUAGE MonadComprehensions, BangPatterns, ScopedTypeVariables #-}
 
 {-|
 Module      : Operations.WithExternalSymbols
@@ -10,6 +10,7 @@ module Operations.WithExternalSymbols
   ( isMacrostateAccepting
   , post
   , postForEachSymbol
+  , complete
   , intersect
   , determinize
   , complement
@@ -45,6 +46,30 @@ post fa currentStates symbol =
 postForEachSymbol :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> Set sym -> Set (Set sta)
 postForEachSymbol fa state =
   Set.map (post fa state)
+
+complete :: forall sym sta.( Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
+complete symbols fa@(Fa initialStates finalStates transitions) =
+  Fa init final trans
+    where
+      init = Set.map Set.singleton initialStates
+      final = Set.map Set.singleton finalStates
+
+      wrap :: Ord a => Set a -> Set (Set a)
+      wrap =
+        Set.map Set.singleton
+
+      wrapOrEmptySet :: Ord a => Set a -> Set (Set a)
+      wrapOrEmptySet elements =
+        if null elements
+          then Set.singleton Set.empty
+          else wrap elements
+
+      trans :: Ord sym => Set (Transition sym (Set sta))
+      trans =
+        symbols `andThen` (\symbol ->
+        Set.insert Set.empty (wrap $ states fa) `andThen` (\state ->
+        wrapOrEmptySet (post fa state symbol) `andThen` (\postState ->
+        Helpers.return $ Transition symbol state postState)))
 
 transitionsCreator
   :: (Ord sym, Ord sym1, Ord sym2, Ord sta1, Ord sta2)
