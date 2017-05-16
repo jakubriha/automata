@@ -12,7 +12,7 @@ Implementation of an efficient functional library for finite automata (FA). This
 
 Most of these operations also have their counterparts (in the module `Operations.WithExternalSymbols`), which allow to specify symbols set to work with. For example, the function `isEmpty :: Set sym -> Fa sym sta -> Bool` from this module has the first parameter, `Set sym`, for this reason.
 
-Function `union` only supports FAs that both have the *same* type of a state. To overcome that, you can use a function `union` (in the module `Operations.Product`), which performs union of two FAs in which each has a different type of a state.
+A function `union` only supports FAs that both have the *same* type of a state. To overcome that, you can use a function `productUnion` (in the module `Operations.Regular`), which performs union of two FAs where types of their states may differ.
 
 Finally, the library also provides two operations implemented using the [antichain-based approach](http://link.springer.com/chapter/10.1007/978-3-642-12002-2_14). These operations are located in the module `Operations.Antichain`:
 

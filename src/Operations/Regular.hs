@@ -10,6 +10,7 @@ module Operations.Regular
   , module Operations.WithExternalSymbols
   , postForEachSymbol
   , union
+  , productUnion
   , intersect
   , determinize
   , complement
@@ -54,9 +55,18 @@ union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStat
     (finalStates1 `Set.union` finalStates2)
     (transitions1 `Set.union` transitions2)
 
+-- |Creates a union of two FAs with product state ('sta1', 'sta2').
+productUnion :: (Ord sym, Ord sta1, Ord sta2) => Fa sym sta1 -> Fa sym sta2 -> Fa sym (Set sta1, Set sta2)
+productUnion fa1 fa2 =
+  ExternalSymbols.productUnion allSymbols completeFa1 completeFa2
+    where
+      allSymbols = symbols fa1 `Set.union` symbols fa2
+      completeFa1 = ExternalSymbols.complete allSymbols fa1
+      completeFa2 = ExternalSymbols.complete allSymbols fa2
+
 intersect :: (Ord sym, Ord sta1, Ord sta2) => Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
 intersect fa1 fa2 =
-  ExternalSymbols.intersect (symbols fa1) (symbols fa2) fa1 fa2
+  ExternalSymbols.intersect (symbols fa1 `Set.union` symbols fa2) fa1 fa2
 
 determinize :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym (Set sta) 
 determinize fa = 
