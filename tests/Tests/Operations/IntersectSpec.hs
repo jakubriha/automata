@@ -17,4 +17,3 @@ spec =
 
       it "doesn't accept 'a18 a18 a18'" $
         assert2Fa "0.txt" "1.txt" (\fa1 fa2 -> not $ run (fa1 `intersect` fa2) ["a18", "a18", "a18"])
-

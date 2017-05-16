@@ -17,7 +17,6 @@ library
   hs-source-dirs:      src
   exposed-modules:     Operations.Regular
                      , Operations.WithExternalSymbols
-                     , Operations.Product
                      , Operations.Antichain.Inclusion
                      , Operations.Antichain.Universality
                      , Testing
@@ -38,7 +37,6 @@ library
                      , process
                      , monad-loops
                      , deepseq
-                     , set-monad
   default-language:    Haskell2010
 
 executable automata-exe
@@ -66,13 +64,12 @@ test-suite automata-test
                      , Tests.Operations.ComplementSpec
                      , Tests.Operations.DeterminizeSpec
                      , Tests.Operations.IntersectSpec
-                     , Tests.Operations.IsEmptySpec
                      , Tests.Operations.IsSubsetOfSpec
                      , Tests.Operations.IsUniversalSpec
+                     , Tests.Operations.ProductUnionSpec
                      , Tests.Operations.RunSpec
                      , Tests.Operations.UnionSpec
                      , Tests.Parsing.GeneralSpec
-                     , Tests.Operations.ProductUnionSpec
   default-language:    Haskell2010
 
 source-repository head

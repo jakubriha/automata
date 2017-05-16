@@ -18,4 +18,3 @@ spec =
 
       it "doesn't accept 'a17 a17 a17'" $
         assertFa "0.txt" (\fa -> not $ run (complement fa) ["a17", "a17", "a17"])
-

@@ -6,8 +6,8 @@ import Data.ByteString (ByteString)
 import Data.Maybe (isJust)
 import Text.Parsec hiding (State)
 import Text.Parsec.ByteString
-import Data.Set.Monad (Set)
-import qualified Data.Set.Monad as Set
+import Data.Set (Set)
+import qualified Data.Set as Set
 import Text.Parsec.Char
 import Text.Parsec.Number
 

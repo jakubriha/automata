@@ -8,8 +8,8 @@ module Types.Fta
   , makeFta
   ) where
 
-import Data.Set.Monad (Set)
-import qualified Data.Set.Monad as Set
+import Data.Set (Set)
+import qualified Data.Set as Set
 
 type Symbol =
   State

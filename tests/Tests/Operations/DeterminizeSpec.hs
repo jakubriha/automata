@@ -21,4 +21,3 @@ spec =
 
       it "doesn't accept 'b b'" $
         assertFa "2.txt" (\fa -> not $ run (determinize fa) (charsToSymbols "bb"))
-
