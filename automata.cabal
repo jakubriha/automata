@@ -68,6 +68,7 @@ test-suite automata-test
                      , Tests.Operations.IsUniversalSpec
                      , Tests.Operations.ProductUnionSpec
                      , Tests.Operations.RunSpec
+                     , Tests.Operations.UnionSpec
                      , Tests.Parsing.GeneralSpec
   default-language:    Haskell2010
 
