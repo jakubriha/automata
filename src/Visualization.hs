@@ -38,8 +38,13 @@ faToDot (Fa initialStates finalStates transitions) =
     where
 
       initialStatesToDot =
-        concatMap (\state -> showInQuotes state ++ " [color=red];")
-      
+        concatMap (\state -> showInQuotesWithSuffix "_start" state
+          ++ " [shape=point];"
+          ++ showInQuotesWithSuffix "_start" state
+          ++ "->"
+          ++ showInQuotes state
+          ++ ";")
+
       finalStatesToDot =
         concatMap (\state -> showInQuotes state ++ " [shape=doublecircle];")
 
@@ -49,11 +54,15 @@ faToDot (Fa initialStates finalStates transitions) =
       mapper (Transition symbol state finalState) =
         showInQuotes state ++ " -> " ++ showInQuotes finalState ++ " [ label=" ++ show symbol ++ " ];"
 
-showInQuotes :: Show a => a -> String
-showInQuotes object =
+showInQuotesWithSuffix :: Show a => String -> a -> String
+showInQuotesWithSuffix suffix object =
   "\"" ++ content ++ "\""
     where
-      content = (filter (/= '\"') . show) object
+      content = (filter (/= '\"') . (++ suffix) . show) object
+
+showInQuotes :: Show a => a -> String
+showInQuotes =
+  showInQuotesWithSuffix ""
 
 displayImage :: FilePath -> IO ()
 displayImage imagePath = do
