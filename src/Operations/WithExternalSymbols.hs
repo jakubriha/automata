@@ -51,6 +51,7 @@ postForEachSymbol :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> Set sym -> S
 postForEachSymbol fa state =
   Set.map (post fa state)
 
+-- |Make a FA complete.
 complete :: forall sym sta.( Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
 complete symbols fa@(Fa initialStates finalStates transitions) =
   Fa init final trans
