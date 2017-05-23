@@ -1,7 +1,11 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 module Operations.WithExternalSymbols
   ( isMacrostateAccepting
   , post
   , postForEachSymbol
+  , complete
+  , productUnion
   , intersect
   , determinize
   , complement
@@ -39,6 +43,51 @@ post fa currentStates symbol =
 postForEachSymbol :: (Eq sym, Eq sta) => [sym] -> Fa sym sta -> [sta] -> [[sta]]
 postForEachSymbol symbols fa state =
   fmap (post fa state) symbols
+
+-- |Make a FA complete.
+complete :: forall sym sta. (Eq sym, Eq sta) => [sym] -> Fa sym sta -> Fa sym [sta]
+complete symbols fa@(Fa initialStates finalStates transitions) =
+  Fa init final trans
+    where
+      init = fmap (: []) initialStates
+      final = fmap (: []) finalStates
+
+      wrap :: [a] -> [[a]]
+      wrap =
+        fmap (: [])
+
+      wrapOrEmptySet :: [a] -> [[a]]
+      wrapOrEmptySet elements =
+        if null elements
+          then [[]]
+          else wrap elements
+
+      trans :: (Eq sym, Eq sta) => [Transition sym [sta]]
+      trans =
+        [ Transition symbol state postState
+        | symbol <- symbols
+        , state <- [] : wrap (states fa)
+        , postState <- wrapOrEmptySet (post fa state symbol)
+        ]
+
+-- |Creates a union of two FAs with product state ('sta1', 'sta2'). Note: Input FAs must be complete.
+productUnion :: (Eq sym, Eq sta1, Eq sta2) => [sym] -> Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
+productUnion symbols fa1@(Fa initialStates1 finalStates1 transitions1) fa2@(Fa initialStates2 finalStates2 transitions2) =
+  let
+    transitions =
+      [ Transition symbol (source1, source2) (target1, target2)
+      | symbol <- symbols
+      , (Transition symbol1 source1 target1) <- transitions1
+      , (Transition symbol2 source2 target2) <- transitions2
+      , symbol1 == symbol && symbol2 == symbol
+      ]
+  in
+    Fa
+      [ (initial1, initial2) | initial1 <- initialStates1, initial2 <- initialStates2 ]
+      ([ (final1, states2) | final1 <- finalStates1, states2 <- states fa2 ]
+        `List.union`
+        [ (states1, final2) | states1 <- states fa1, final2 <- finalStates2 ])
+      transitions
 
 -- |Creates an intersection of two FAs.
 intersect :: Eq sym => [sym] -> Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
