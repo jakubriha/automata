@@ -1,5 +1,7 @@
 module Operations.WithExternalSymbols
-  ( postForEachSymbol
+  ( isMacrostateAccepting
+  , post
+  , postForEachSymbol
   , transitionsCreator
   , intersect
   , determinize
@@ -24,15 +26,6 @@ isMacrostateAccepting :: Eq sta => Fa sym sta -> [sta] -> Bool
 isMacrostateAccepting fa states =
   states `List.intersect` finalStates fa /= []
 
-run :: (Eq sym, Eq sta) => Fa sym sta -> [sym] -> Bool
-run fa =
-  run' (initialStates fa)
-    where
-      run' currentStates [] =
-        isMacrostateAccepting fa currentStates
-      run' currentStates (x:xs) =
-        run' (post fa currentStates x) xs
-
 post :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> sym -> [sta]
 post fa currentStates symbol =
   fmap finalState $ filter isApplicableTransition $ transitions fa
@@ -43,13 +36,6 @@ post fa currentStates symbol =
 postForEachSymbol :: (Eq sym, Eq sta) => [sym] -> Fa sym sta -> [sta] -> [[sta]]
 postForEachSymbol symbols fa state =
   fmap (post fa state) symbols
-
-union :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym sta -> Fa sym sta
-union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
-  Fa
-    (initialStates1 `List.union` initialStates2)
-    (finalStates1 `List.union` finalStates2)
-    (transitions1 `List.union` transitions2)
 
 transitionsCreator
   :: (Eq sym1, Eq sym2)

@@ -2,7 +2,7 @@ module Operations.Regular
   ( charsToSymbols
   , isMacrostateAccepting
   , run
-  , post
+  , module Operations.WithExternalSymbols
   , postForEachSymbol
   , union
   , intersect
@@ -18,6 +18,7 @@ import qualified Data.List as List
 import qualified Data.Set as Set
 import Data.Set (Set, empty, toList, fromList, unions, intersection)
 import Data.List ((\\), nub)
+import Operations.WithExternalSymbols (post)
 import qualified Operations.WithExternalSymbols as ExternalSymbols
 
 charsToSymbols :: String -> [Symbol]
@@ -27,6 +28,10 @@ isMacrostateAccepting :: Eq sta => Fa sym sta -> [sta] -> Bool
 isMacrostateAccepting fa states =
   states `List.intersect` finalStates fa /= []
 
+postForEachSymbol :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> [[sta]]
+postForEachSymbol fa =
+  ExternalSymbols.postForEachSymbol (symbols fa) fa
+
 run :: (Eq sym, Eq sta) => Fa sym sta -> [sym] -> Bool
 run fa =
   run' (initialStates fa)
@@ -35,17 +40,6 @@ run fa =
         isMacrostateAccepting fa currentStates
       run' currentStates (x:xs) =
         run' (post fa currentStates x) xs
-
-post :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> sym -> [sta]
-post fa currentStates symbol =
-  fmap finalState $ filter isApplicableTransition $ transitions fa
-    where
-      isApplicableTransition (Transition tSymbol state _) =
-        tSymbol == symbol && state `elem` currentStates
-
-postForEachSymbol :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> [[sta]]
-postForEachSymbol fa =
-  ExternalSymbols.postForEachSymbol (symbols fa) fa
 
 union :: (Eq sym, Eq sta) => Fa sym sta -> Fa sym sta -> Fa sym sta
 union (Fa initialStates1 finalStates1 transitions1) (Fa initialStates2 finalStates2 transitions2) =
