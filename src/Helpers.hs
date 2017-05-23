@@ -2,6 +2,7 @@ module Helpers
   ( isSubsetOf
   , none
   , remove
+  , unions
   , andThen
   , return
   , guard

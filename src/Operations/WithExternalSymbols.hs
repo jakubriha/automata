@@ -15,6 +15,9 @@ module Operations.WithExternalSymbols
   , intersect
   , determinize
   , complement
+  , isEmpty
+  , isSubsetOf
+  , isUniversal
   ) where
 
 import Types.Fa hiding (State, state, symbols)
@@ -48,6 +51,7 @@ postForEachSymbol :: (Ord sym, Ord sta) => Fa sym sta -> Set sta -> Set sym -> S
 postForEachSymbol fa state =
   Set.map (post fa state)
 
+-- |Make a FA complete.
 complete :: forall sym sta.( Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
 complete symbols fa@(Fa initialStates finalStates transitions) =
   Fa init final trans
@@ -146,13 +150,56 @@ while fa@(Fa initialStates finalStates _) !symbols = do
     where
       newFinalStates = Set.filter $ not . Set.null . (`Set.intersection` finalStates)
 
+-- |Converts a FA to an equivalent deterministic FA.
 determinize :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
 determinize !symbols !fa =
   evalState (while fa symbols) (Set.singleton (initialStates fa), Set.empty, Set.empty)
 
+-- |Creates a complement of a FA.
 complement :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Fa sym (Set sta)
 complement symbols =
   updateFinalStates . determinize symbols
     where
       updateFinalStates fa@(Fa initialStates finalStates transitions) =
         Fa initialStates (states fa Set.\\ finalStates) transitions
+
+-- |Checks whether a FA accepts an empty language.
+isEmpty :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Bool
+isEmpty symbols =
+  not . hasTerminatingPath symbols
+
+hasTerminatingPath :: forall sym sta. (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Bool
+hasTerminatingPath symbols fa =
+  not (null $ finalStates fa) && hasTerminatingPath' Set.empty (initialStates fa)
+    where
+      hasTerminatingPath' :: Set sta -> Set sta -> Bool
+      hasTerminatingPath' processed next
+        | null next = False
+        | not $ null $ next `Set.intersection` finalStates fa = True
+        | otherwise =
+          let
+            processed' = processed `Set.union` next
+            next' = newStates symbols fa next Set.\\ processed'
+          in
+            hasTerminatingPath' processed' next'
+
+      newStates :: Set sym -> Fa sym sta -> Set sta -> Set sta
+      newStates symbols fa states =
+        Helpers.unions $ postForEachSymbol fa states symbols
+
+-- |Checks whether the first FA is subset of the second FA using the naive algorithm.
+isSubsetOf :: (Ord sym, Ord sta) => Set sym -> Set sym -> Fa sym sta -> Fa sym sta -> Bool
+isSubsetOf symbols1 symbols2 fa1 fa2 =
+  isEmpty combinedSymbols (intersect combinedSymbols fa1 (complement symbols2 fa2))
+    where
+      combinedSymbols =
+        symbols1 `Set.union` symbols2
+
+-- |Checks whether a FA accepts all possible strings using the naive algorithm.
+isUniversal :: (Ord sym, Ord sta) => Set sym -> Fa sym sta -> Bool
+isUniversal symbols fa =
+  not (null $ states fa) && isSubsetOf symbols symbols universalFA fa
+    where
+      state = Set.findMin $ states fa
+      transitions = Set.map (\symbol -> Transition symbol state state) symbols
+      universalFA = Fa (Set.singleton state) (Set.singleton state) transitions
