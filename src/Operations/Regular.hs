@@ -14,6 +14,9 @@ module Operations.Regular
   , intersect
   , determinize
   , complement
+  , isEmpty
+  , isSubsetOf
+  , isUniversal
   ) where
 
 import Types.Fa
@@ -64,14 +67,32 @@ productUnion fa1 fa2 =
       completeFa1 = ExternalSymbols.complete allSymbols fa1
       completeFa2 = ExternalSymbols.complete allSymbols fa2
 
+-- |Creates an intersection of two FAs.
 intersect :: (Ord sym, Ord sta1, Ord sta2) => Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
 intersect fa1 fa2 =
   ExternalSymbols.intersect (symbols fa1 `Set.union` symbols fa2) fa1 fa2
 
+-- |Converts a FA to an equivalent deterministic FA.
 determinize :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym (Set sta) 
 determinize fa = 
   ExternalSymbols.determinize (symbols fa) fa
 
+-- |Creates a complement of a FA.
 complement :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym (Set sta)
 complement fa =
   ExternalSymbols.complement (symbols fa) fa
+
+-- |Checks whether a FA accepts an empty language.
+isEmpty :: (Ord sym, Ord sta) => Fa sym sta -> Bool
+isEmpty fa =
+  ExternalSymbols.isEmpty (symbols fa) fa
+
+-- |Checks whether the first FA is subset of the second FA using the naive algorithm.
+isSubsetOf :: (Ord sym, Ord sta) => Fa sym sta -> Fa sym sta -> Bool
+isSubsetOf fa1 fa2 =
+  ExternalSymbols.isSubsetOf (symbols fa1) (symbols fa2) fa1 fa2  
+
+-- |Checks whether a FA accepts all possible strings using the naive algorithm.
+isUniversal :: (Ord sym, Ord sta) => Fa sym sta -> Bool
+isUniversal fa =
+  ExternalSymbols.isUniversal (symbols fa) fa
