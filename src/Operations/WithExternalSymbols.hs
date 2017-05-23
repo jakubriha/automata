@@ -19,13 +19,16 @@ import Data.List ((\\), nub)
 import Control.Monad.State
 import Control.Monad.Loops (whileM_)
 
+-- |Converts String to a list of symbols.
 charsToSymbols :: String -> [Symbol]
 charsToSymbols = fmap (: [])
 
+-- |Determines whether a macro-state is accepting.
 isMacrostateAccepting :: Eq sta => Fa sym sta -> [sta] -> Bool
 isMacrostateAccepting fa states =
   states `List.intersect` finalStates fa /= []
 
+-- |Returns the post state of a state and a specific symbol.
 post :: (Eq sym, Eq sta) => Fa sym sta -> [sta] -> sym -> [sta]
 post fa currentStates symbol =
   fmap finalState $ filter isApplicableTransition $ transitions fa
@@ -33,6 +36,7 @@ post fa currentStates symbol =
       isApplicableTransition (Transition tSymbol state _) =
         tSymbol == symbol && state `elem` currentStates
 
+-- |Returns the post states for each symbol of the alphabet.
 postForEachSymbol :: (Eq sym, Eq sta) => [sym] -> Fa sym sta -> [sta] -> [[sta]]
 postForEachSymbol symbols fa state =
   fmap (post fa state) symbols
@@ -56,6 +60,7 @@ transitionsCreator symbols1 symbols2 function predicate fa1 fa2 =
   , symbol1k == symbol1 && symbol2k == symbol2
   ]
 
+-- |Creates an intersection of two FAs.
 intersect :: Eq sym => [sym] -> [sym] -> Fa sym sta1 -> Fa sym sta2 -> Fa sym (sta1, sta2)
 intersect fa1Symbols fa2Symbols fa1 fa2 =
   Fa
@@ -97,10 +102,12 @@ while fa symbols = do
     where
       newFinalStates = filter (not . null . (`List.intersect` finalStates fa))
 
+-- |Converts a FA to an equivalent deterministic FA.
 determinize :: (Eq sym, Eq sta) => [sym] -> Fa sym sta -> Fa sym [sta]
 determinize symbols fa =
   evalState (while fa symbols) ([initialStates fa], [], []) 
 
+-- |Creates a complement of a FA.
 complement :: (Eq sym, Eq sta) => [sym] -> Fa sym sta -> Fa sym [sta]
 complement symbols =
   updateFinalStates . determinize symbols
@@ -108,6 +115,7 @@ complement symbols =
       updateFinalStates fa@(Fa initialStates finalStates transitions) =
         Fa initialStates (states fa \\ finalStates) transitions
 
+-- |Checks whether a FA accepts an empty language.
 isEmpty :: (Eq sym, Ord sta) => [sym] -> Fa sym sta -> Bool
 isEmpty symbols =
   not . hasTerminatingPath symbols
@@ -130,10 +138,12 @@ newStates :: (Eq sym, Ord sta) => [sym] -> Fa sym sta -> Set sta -> Set sta
 newStates symbols fa =
   fromList . nub . concatMap (concat . postForEachSymbol symbols fa . (: []))
 
+-- |Checks whether the first FA is subset of the second FA using the naive algorithm.
 isSubsetOf :: (Eq sym, Ord sta) => [sym] -> [sym] -> Fa sym sta -> Fa sym sta -> Bool
 isSubsetOf fa1Symbols fa2Symbols fa1 fa2 =
   isEmpty (fa1Symbols `List.union` fa2Symbols) (intersect fa1Symbols fa2Symbols fa1 (complement fa2Symbols fa2))
 
+-- |Checks whether a FA accepts all possible strings using the naive algorithm.
 isUniversal :: (Eq sym, Ord sta) => [sym] -> Fa sym sta -> Bool
 isUniversal symbols fa =
   not (null $ states fa) && isSubsetOf symbols symbols universalFA fa
