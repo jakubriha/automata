@@ -17,6 +17,11 @@ The library also provides two operations implemented using the [antichain-based 
 * Inclusion testing (function `isSubsetOf`),
 * Universality testing (function `isUniversal`).
 
+This Git repository has two branches of interest:
+
+* The branch `master` representing a library variant using `Data.Set.Set`,
+* The branch `list` representing a library variant using `[]`.
+
 ## Experimenting with the library
 This library uses [Stack](https://docs.haskellstack.org) as a development tool. It is necessary to install Stack in order to build the library. Stack docs contain the [installation instructions](https://docs.haskellstack.org/en/stable/README/#how-to-install). After the installation of Stack, it is necessary to install the gtk2hs library by executing `stack install gtk2hs-buildtools`.
 
